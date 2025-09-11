@@ -1,0 +1,105 @@
+{
+    "tasks": [
+        {
+            "type": "shell",
+            "label": "make",
+            "command": "make",
+            "args": [
+                "all",
+                "-j$(nproc)"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "type": "cppbuild",
+            "label": "build",
+            "command": "/usr/bin/i686-w64-mingw32-g++",
+            "args": [
+                "-fdiagnostics-color=always",
+                "-fno-exceptions",
+                "-Wextra",
+                "-Wall",
+                "-pedantic",
+                "-Wconversion",
+                "-Wnull-dereference",
+                "-O0",
+                "-march=native",
+                "-std=c++20",
+                "-g",
+                "out/*.o",
+                "-o",
+                "main",
+                "-I",
+                "${workspaceFolder}/prefix/drive_c/Program Files (x86)/FMOD SoundSystem/FMOD Studio API Windows/api/core/inc",
+                "-L'${workspaceFolder}/prefix/drive_c/Program Files (x86)/FMOD SoundSystem/FMOD Studio API Windows/api/core/lib/x86'",
+                "-lfmod",
+                "-lgdi32",
+                "-ld3d9",
+                "-ld3dx9",
+                "-ldinput8",
+                "-ldxguid",
+                "-static-libgcc",
+                "-static-libstdc++",
+                "-static",
+            ],
+            "dependsOn": [
+                "make",
+            ],
+            "dependsOrder": "sequence",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$gcc",
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "run (wine)",
+            "type": "shell",
+            "command": "/usr/bin/wine",
+            "args": ["${workspaceFolder}/main.exe"],
+            "problemMatcher": []
+        },
+        {
+            "label": "run (proton)",
+            "type": "shell",
+            "command": "/usr/share/steam/compatibilitytools.d/proton-ge-custom/proton",
+            "args": [
+                "run",
+                "${workspaceFolder}/main.exe"
+            ],
+            "options": {
+                "env": {
+                    "WINEDLLOVERRIDES": "fmod=n",
+                    "WINEPATH": "${workspaceFolder}/prefix/drive_c/Program Files (x86)/FMOD SoundSystem/FMOD Studio API Windows/api/core/lib/x86",
+                    "STEAM_COMPAT_DATA_PATH": "${workspaceFolder}/prefix",
+                    "STEAM_COMPAT_CLIENT_INSTALL_PATH": "~/.steam/steam",
+                }
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "build & run (wine)",
+            "dependsOn": [
+                "build",
+                "run (wine)"
+            ],
+            "dependsOrder": "sequence",
+            "problemMatcher": []
+        },
+        {
+            "label": "build & run (proton)",
+            "dependsOn": [
+                "build",
+                "run (proton)"
+            ],
+            "dependsOrder": "sequence",
+            "problemMatcher": []
+        }
+    ],
+    "version": "2.0.0"
+}

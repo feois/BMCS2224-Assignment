@@ -1,0 +1,245 @@
+
+#include "dependencies.hpp"
+#include "keyboard.hpp"
+#include "mouse.hpp"
+#include "utils.hpp"
+#include "window.hpp"
+#include "device.hpp"
+#include "mainloop.hpp"
+#include "sprite.hpp"
+#include "line.hpp"
+#include "sprite_sheet.hpp"
+#include "texture_locker.hpp"
+#include "timer.hpp"
+#include "animation.hpp"
+#include "direction.hpp"
+#include "audio.hpp"
+#include <cmath>
+
+struct MyWindow: public Window {
+	Device device;
+	
+	bool on_keydown(WPARAM key, [[maybe_unused]] LPARAM lParam) override {
+		switch (key)
+		{
+		case VK_ESCAPE:
+			destroy();
+			break;
+		
+		case 'F':
+			device.set_fullscreen(true);
+			break;
+		
+		default:
+			return false;
+		}
+		
+		return true;
+	}
+	
+	void on_destroy() override {
+		[[maybe_unused]] Device _device = std::move(device); // release the device before window is destroyed
+		PostQuitMessage(0);
+	}
+	
+    MyWindow(const WindowClass &wc, LPCTSTR name, Vec2i pos, Vec2i size, int show): Window(wc, name, pos, size, show), device(Device(*this, size)) {}
+};
+
+struct Player {
+	Animation animation;
+	Angle rotation;
+	Vec2f position;
+	Vec2f size;
+	Vec2f half_size;
+	Vec2f velocity;
+	Vec2f acceleration;
+	float radius;
+	float mass;
+	
+	Player(Animation animation, Vec2f pos, Vec2f size, float radius, float mass): animation(animation), position(pos), size(size), half_size(size / 2), radius(radius), mass(mass) {}
+	
+	Vec2f center() const { return position + half_size; }
+	Vec2f direction() const { return -Vec2f::from_d3d_angle(rotation); }
+	
+	void update(int frame) {
+		animation.update(frame);
+		velocity += acceleration * static_cast<float>(frame);
+		position += velocity * static_cast<float>(frame);
+	}
+	
+	void bounce(Vec2f map_size) {
+		map_size -= size;
+		
+		if (position.x < 0) {
+			velocity = velocity.flip_x();
+			rotation = (-velocity).to_d3d_angle();
+			position.x = 0;
+		}
+		
+		if (position.x > map_size.x) {
+			velocity = velocity.flip_x();
+			rotation = (-velocity).to_d3d_angle();
+			position.x = map_size.x;
+		}
+		
+		if (position.y < 0) {
+			velocity = velocity.flip_y();
+			rotation = (-velocity).to_d3d_angle();
+			position.y = 0;
+		}
+		
+		if (position.y > map_size.y) {
+			velocity = velocity.flip_y();
+			rotation = (-velocity).to_d3d_angle();
+			position.y = map_size.y;
+		}
+	}
+	
+	void draw(Sprite &sprite) {
+		sprite
+			.transform(Transform().rotate(rotation.rotate<LEFT>(), center()))
+			.draw(animation.get_texture_rect(), position.to_i())
+			.clear_transform();
+	}
+	
+	void input(const Keyboard &keyboard, BYTE left_key, BYTE right_key, BYTE acc_key, BYTE dec_key, int frame, Angle rotation_speed, float acceleration_factor) {
+		rotation_speed = Radian(frame * rotation_speed.rad());
+		
+		if (keyboard.key_pressed(left_key))
+			rotation = rotation.rotate<LEFT>(rotation_speed);
+		
+		if (keyboard.key_pressed(right_key))
+			rotation = rotation.rotate<RIGHT>(rotation_speed);
+		
+		if (keyboard.key_pressed(acc_key))
+			acceleration = direction() * acceleration_factor;
+		
+		if (keyboard.key_pressed(dec_key))
+			acceleration = -direction() * acceleration_factor;
+	}
+};
+
+void collision(Player &x, Player &y) {
+	auto r = x.radius + y.radius;
+	auto v = x.position - y.position;
+	auto d = v.length_squared() - r * r;
+
+    if (d <= 0) {
+		auto n = v.normalize();
+		auto vel = n.dot(x.velocity - y.velocity);
+		
+		if (vel > 0) return;
+
+        auto f = n * (2 * vel / (x.mass + y.mass));
+		
+		x.velocity -= f * y.mass;
+		y.velocity += f * x.mass;
+
+        auto overlap = sqrt(-d) / 2;
+		
+		x.position -= n * overlap;
+		y.position += n * overlap;
+    }
+}
+
+int WINAPI WinMain([[maybe_unused]] HINSTANCE hNewInstance, [[maybe_unused]] HINSTANCE hPrevInstance, [[maybe_unused]] LPSTR lpCmdLine, int nShowCmd)
+{
+	constexpr auto RESOLUTION = Vec2(800, 600);
+	constexpr int FPS = 60;
+	
+    const auto wc = WindowClass(TEXT("My Window Class"));
+	auto window = MyWindow(wc, TEXT("My Window"), Vec2(700, 150), RESOLUTION, nShowCmd);
+	auto &device = window.device; if (device.failed()) panic(20, "Failed to create Direct3D 9 device");
+	auto font = Font(device, TEXT("Arial"), Vec2(0, 25), 0); if (font.failed()) panic(40, "Failed to create font");
+	auto text_config = TextConfig().set_color(Colors::WHITE);
+	auto sprite = Sprite(device); if (sprite.failed()) panic(30, "Failed to create Direct3D 9 sprite");
+	auto line = Line(device); if (line.failed()) panic(40, "Failed to create Direct3D 9 line");
+	
+	#define LOAD_TEXTURE(var, device, path, ...) auto var = Texture(device, TEXT(path) __VA_OPT__(,) __VA_ARGS__); if (var.failed()) panic(100, "Failed to load texture \"" #var "\" from \"" path "\"");
+	LOAD_TEXTURE(ball, device, "assets/practical9.png");
+	
+	auto ball_ss = SpriteSheet::with_sheet_size(ball, Vec2(2, 2));
+	
+	auto keyboard = Keyboard(window, false, false);
+	auto mouse = Mouse(window, false, true);
+	
+	Vec2i mpos;
+	
+	auto timer = Timer(FPS);
+	
+	constexpr float mass = 50.0;
+	constexpr float power = 1.0;
+	constexpr auto rotation_speed = Degree(4.0);
+	
+	const auto size = ball_ss.get_tile_size().to_f();
+	const auto radius = size.x / 2;
+	
+	auto black = Player(
+		Animation(FPS / 4, 2, [&](int i) { return ball_ss.tile(i, 0); }),
+		Vec2(100, 100),
+		size,
+		radius,
+		mass * 3
+	);
+	auto white = Player(
+		Animation(FPS / 4, 2, [&](int i) { return ball_ss.tile(i, 1); }),
+		Vec2(200, 200),
+		size,
+		radius,
+		mass
+	);
+	
+	auto fmod = panic_if_failed(Fmod(1000), 111, "Failed to init fmod");
+	auto sound = panic_if_failed(Sound(fmod, "assets/Life.mp3"), 112, "Failed to create sound");
+	auto channel = panic_if_failed(fmod.channel(sound), 113, "Failed tp create channel");
+	
+	channel.play();
+	
+    mainloop([&] {
+		timer.update();
+		
+		int frame_delta = timer.frame();
+		
+		fmod.update();
+		
+		if (!keyboard) keyboard.retry();
+		if (!mouse) mouse.retry();
+		
+		black.acceleration = Vec2f();
+		white.acceleration = Vec2f();
+		
+		if (keyboard && keyboard.update().success()) {
+			black.input(keyboard, DIK_A, DIK_D, DIK_W, DIK_S, frame_delta, rotation_speed, power / black.mass);
+			white.input(keyboard, DIK_LEFT, DIK_RIGHT, DIK_UP, DIK_DOWN, frame_delta, rotation_speed, power / white.mass);
+		}
+		
+		black.update(frame_delta);
+		white.update(frame_delta);
+		black.bounce(RESOLUTION);
+		white.bounce(RESOLUTION);
+		
+		collision(black, white);
+		
+		device.clear();
+		device.begin();
+		sprite.begin(D3DXSPRITE_ALPHABLEND);
+		line.begin();
+		
+		if (mouse && mouse.update().success())
+			mpos += mouse.delta();
+		
+		black.draw(sprite);
+		white.draw(sprite);
+		
+		// sprite.write(font, format("").data(), Vec2(100, 100), text_config);
+		
+		line.end();
+		sprite.end();
+		device.end();
+		device.present();
+		
+		return true;
+	});
+	
+	return 0;
+}
