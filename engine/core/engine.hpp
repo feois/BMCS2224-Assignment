@@ -1,6 +1,6 @@
 
-#ifndef GAME_HPP
-#define GAME_HPP
+#ifndef ENGINE_HPP
+#define ENGINE_HPP
 
 #include <engine/direct3d/font.hpp>
 #include <engine/input/keyboard.hpp>
