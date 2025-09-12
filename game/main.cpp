@@ -1,6 +1,7 @@
 
 #include <engine/engine.hpp>
 #include <physics/physics.hpp>
+#include <ui/prelude.hpp>
 
 constexpr auto RESOLUTION = Vec2(800, 600);
 constexpr auto CENTER = Vec2(RESOLUTION.i() / 2);
