@@ -44,7 +44,7 @@ inline ActiveState operator --(ActiveState &state, int) {
 
 // unacquired input device
 class RawInputDevice: public HResult {
-    std::shared_ptr<IDirectInput8> direct_input;
+    Rc<IDirectInput8> direct_input;
     Box<IDirectInputDevice8, RELEASE(IDirectInputDevice8)> device;
     bool acquired = false;
     
