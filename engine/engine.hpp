@@ -83,10 +83,10 @@ public:
     Timer timer;
     Color background = Colors::BLACK;
     
-    std::vector<std::shared_ptr<Scene<C>>> scenes;
+    std::vector<Rc<Scene<C>>> scenes;
     
-    std::shared_ptr<Scene<C>> current_scene = nullptr;
-    std::shared_ptr<Texture> pointer_texture;
+    Rc<Scene<C>> current_scene = nullptr;
+    Rc<Texture> pointer_texture;
     
     Engine(LPCTSTR name, Vec2i pos, Vec2i size, int fps, int show):
         resolution(size),

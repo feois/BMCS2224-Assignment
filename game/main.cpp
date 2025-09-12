@@ -15,7 +15,7 @@ constexpr auto BUTTON_BORDER_WIDTH = 1;
 #define ASSETS_DIR "assets/"
 
 struct Assets {
-	std::shared_ptr<Texture> pointer;
+	Rc<Texture> pointer;
 	Texture militia, shuriken, bomb, explosion_effect, pause;
 	std::array<Sound, 6> explosion;
 };
@@ -102,8 +102,8 @@ struct GameScene: public Scene<Context> {
 	Rect camera { -CENTER.f(), RESOLUTION };
 	Rect large_camera { -RESOLUTION.f(), RESOLUTION.f() * 2 };
 	
-	std::vector<std::shared_ptr<Wall>> walls;
-	std::vector<std::shared_ptr<Grinder>> grinders;
+	std::vector<Rc<Wall>> walls;
+	std::vector<Rc<Grinder>> grinders;
 	
 	Entity player { Vec2(), Vec2() };
 	Direction gravity_direction = Direction::Down;
@@ -111,8 +111,8 @@ struct GameScene: public Scene<Context> {
 	
 	Direction player_last_direction = Direction::Right;
 	
-	std::vector<std::shared_ptr<Wall>> active_walls;
-	std::vector<std::shared_ptr<Grinder>> active_grinders;
+	std::vector<Rc<Wall>> active_walls;
+	std::vector<Rc<Grinder>> active_grinders;
 	
 	int hp = 3;
 	TString hp_string;

@@ -43,7 +43,7 @@ using TStr = std::basic_string_view<TCHAR>;
 #define SINGLETON(t, f, d) \
     static std::weak_ptr<t> w; \
     if (auto s = w.lock()) return s; \
-    auto s = std::shared_ptr<t>((f)(), (d)); \
+    auto s = Rc<t>((f)(), (d)); \
     w = s; \
     return s; \
 

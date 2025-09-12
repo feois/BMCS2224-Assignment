@@ -13,7 +13,7 @@ class Device: public HResult {
 	D3DPRESENT_PARAMETERS param;
 	Box<IDirect3DDevice9, RELEASE(IDirect3DDevice9)> device;
 	Vec2i size;
-	std::shared_ptr<IDirect3D9> direct3D;
+	Rc<IDirect3D9> direct3D;
 	
 public:
 	Device(const Window &window, Vec2i size);

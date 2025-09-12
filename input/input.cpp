@@ -7,7 +7,7 @@ Vec2i get_mouse_pos() {
 	return Vec2i(point.x, point.y);
 }
 
-std::shared_ptr<IDirectInput8> DirectInput() {
+Rc<IDirectInput8> DirectInput() {
 	SINGLETON(
 		IDirectInput8,
 		[]() {

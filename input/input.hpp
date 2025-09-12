@@ -8,7 +8,7 @@
 
 Vec2i get_mouse_pos();
 
-std::shared_ptr<IDirectInput8> DirectInput();
+Rc<IDirectInput8> DirectInput();
 
 enum class ActiveState {
     Inactive,
@@ -42,6 +42,7 @@ inline ActiveState operator --(ActiveState &state, int) {
     return s;
 }
 
+// unacquired input device
 class RawInputDevice: public HResult {
     std::shared_ptr<IDirectInput8> direct_input;
     Box<IDirectInputDevice8, RELEASE(IDirectInputDevice8)> device;
@@ -58,15 +59,16 @@ public:
     virtual ~RawInputDevice() = default;
 };
 
+// acquired input device
 template<RawInputDevice (&Initializer)()>
 class InputDevice: public HResult {
-    std::shared_ptr<RawInputDevice> device;
+    Rc<RawInputDevice> device;
     const Window *window;
     bool background;
     bool exclusive;
     bool acquired;
     
-    static std::shared_ptr<RawInputDevice> device_rc() {
+    static Rc<RawInputDevice> device_rc() {
         SINGLETON(
             RawInputDevice,
             []() { return new RawInputDevice(Initializer()); },
