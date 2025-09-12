@@ -5,41 +5,19 @@
 #include <engine/direct3d/font.hpp>
 #include <engine/input/keyboard.hpp>
 #include <engine/input/mouse.hpp>
-#include <engine/audio/audio.hpp>
 #include <engine/ui/ui.hpp>
-#include "sprite_sheet.hpp"
 #include "timer.hpp"
-#include "animation.hpp"
-#include "utils.hpp"
+#include "scene.hpp"
 #include <algorithm>
 
 template<typename C>
-class Engine;
-
-template<typename C>
-class Scene {
-protected:
-    Engine<C> *engine = nullptr;
-    C* context = nullptr;
-    Box<UI> ui;
-    
-    friend Engine<C>;
-    
-public:
-    virtual void init() {}
-    virtual void physics() {}
-    virtual void render() {}
-    
-    virtual ~Scene() = default;
-};
-
-template<typename C>
 class Engine {
+protected:
     bool quit_flag = false;
     bool reset = false;
     
 public:
-    struct GameWindow: public Window {
+    struct EngineWindow: public Window {
         Engine *engine;
         
         bool on_keydown(WPARAM key, LPARAM lParam) {
@@ -55,20 +33,12 @@ public:
         using Window::Window;
     };
     
-    enum SpriteType {
-        ui_border,
-        ui_background,
-        general,
-        pointer,
-        _sprite_count,
-    };
-    
     Sprite create_sprite() { return panic_if_failed(Sprite(device, rect_texture), 11, "Failed to create sprite"); }
     
     Vec2i resolution;
     
     WindowClass window_class;
-    GameWindow window;
+    EngineWindow window;
     Device device = panic_if_failed(Device(window, resolution), 10, "Failed to create device");
     Rc<Texture> rect_texture = Sprite::create_rect_texture(device);
     UI::Drawer ui_drawer = {
@@ -91,7 +61,7 @@ public:
     Engine(LPCTSTR name, Vec2i pos, Vec2i size, int fps, int show):
         resolution(size),
         window_class(WindowClass(name)),
-        window(GameWindow(window_class, name, pos, size, show)),
+        window(EngineWindow(window_class, name, pos, size, show)),
         timer(Timer(fps))
     {
         window.engine = this;

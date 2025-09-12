@@ -5,7 +5,7 @@
 #include "audio.hpp"
 
 class Sound: public FmodResult {
-    Box<FMOD_SOUND, [](FMOD_SOUND* p) { FMOD_Sound_Release(p); }> sound = nullptr;
+    Box<FMOD_SOUND, [](FMOD_SOUND* p) { FMOD_Sound_Release(p); }> sound;
     
     friend Fmod;
     
