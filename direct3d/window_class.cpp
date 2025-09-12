@@ -1,6 +1,5 @@
 
 #include "window_class.hpp"
-#include "utils.hpp"
 
 static LRESULT CALLBACK window_procedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
 	auto payload = reinterpret_cast<WindowCallback *>(GetWindowLongPtr(hWnd, GWLP_USERDATA));

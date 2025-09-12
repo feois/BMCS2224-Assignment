@@ -2,7 +2,7 @@
 #ifndef PHYSICS_HPP
 #define PHYSICS_HPP
 
-#include "vec2.hpp"
+#include <engine/vec2.hpp>
 
 struct PhysicsObject {
     Vec2f position;

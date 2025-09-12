@@ -1,51 +1,41 @@
 # Compiler
 CXX = /usr/bin/i686-w64-mingw32-g++
 CXXFLAGS = -MMD -MP -fdiagnostics-color=always -fno-exceptions -Wextra \
-	-Wall -pedantic -Wconversion -Wnull-dereference -O0 -march=native -std=c++20 -g \
-	-I '/home/wilson/tarc/game/prefix/drive_c/Program Files (x86)/FMOD SoundSystem/FMOD Studio API Windows/api/core/inc' \
-	-L'/home/wilson/tarc/game/prefix/drive_c/Program Files (x86)/FMOD SoundSystem/FMOD Studio API Windows/api/core/lib/x86' \
+	-Wall -pedantic -Wconversion -Wnull-dereference -O0 -march=native -std=c++20 -g -I . \
+	-I 'prefix/drive_c/Program Files (x86)/FMOD SoundSystem/FMOD Studio API Windows/api/core/inc' \
+	-L'prefix/drive_c/Program Files (x86)/FMOD SoundSystem/FMOD Studio API Windows/api/core/lib/x86' \
 	-lfmod -lgdi32 -ld3d9 -ld3dx9 -ldinput8 -ldxguid -static-libgcc -static-libstdc++ -static
 
-# Directories
-SRC_DIR = .
-BUILD_DIR = out
-BIN_DIR = .
+SRC_DIRS := audio direct3d engine game input physics ui
+TARGET_DIR := out
+TARGET := $(TARGET_DIR)/game     # final binary name
 
-# Target executable
-TARGET = $(BIN_DIR)/main
+# ==== BUILD LOGIC ====
+# Collect all .cpp files from SRC_DIRS
+SRCS := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.cpp))
 
-# Source files
-SRCS = $(wildcard $(SRC_DIR)/*.cpp)
-
-# Object files in build directory
-OBJS = $(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(SRCS))
-
-DEPS = $(OBJS:.o=.d)
+# Generate object and dependency file paths in TARGET_DIR
+OBJS := $(patsubst %.cpp,$(TARGET_DIR)/%.o,$(SRCS))
+DEPS := $(OBJS:.o=.d)
 
 # Default target
 all: $(TARGET)
 
-# Link object files to create the executable
-$(TARGET): $(OBJS) | $(BIN_DIR)
-# 	@$(CXX) $(CXXFLAGS) -o $@ $^
-	@echo
+# Link step
+$(TARGET): $(OBJS)
+	@mkdir -p $(dir $@)
+# 	$(CXX) $(CXXFLAGS) $(OBJS) -v -o $@
 
-# Compile source files into object files
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp | $(BUILD_DIR)
+# Compile step (pattern rule)
+$(TARGET_DIR)/%.o: %.cpp
+	@mkdir -p $(dir $@)
 	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
-# Create build and bin directories if they don't exist
-$(BUILD_DIR):
-	mkdir -p $(BUILD_DIR)
-
-$(BIN_DIR):
-	mkdir -p $(BIN_DIR)
-
-# Clean up object files and executable
-clean:
-	rm -rf $(BUILD_DIR) $(BIN_DIR)
-
-# Optional: rebuild
-rebuild: clean all
-
+# Include dependency files if they exist
 -include $(DEPS)
+
+# Cleanup
+clean:
+	rm -rf $(TARGET_DIR)
+
+.PHONY: all clean

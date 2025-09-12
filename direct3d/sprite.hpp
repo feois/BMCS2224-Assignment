@@ -2,16 +2,10 @@
 #ifndef SPRITE_HPP
 #define SPRITE_HPP
 
-#include "dependencies.hpp"
-#include "result.hpp"
-#include "texture_rect.hpp"
+#include "direct3d.hpp"
 #include "texture_locker.hpp"
-#include "vec2.hpp"
-#include "utils.hpp"
-#include "alignment.hpp"
-#include "transform.hpp"
-#include <vector>
-#include <functional>
+#include <engine/texture_rect.hpp>
+#include <engine/transform.hpp>
 
 class Sprite: public HResult, public Renderer {
 	Box<ID3DXSprite, RELEASE(ID3DXSprite)> sprite;

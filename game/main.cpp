@@ -1,6 +1,6 @@
 
-#include "game.hpp"
-#include <iostream>
+#include <engine/engine.hpp>
+#include <physics/physics.hpp>
 
 constexpr auto RESOLUTION = Vec2(800, 600);
 constexpr auto CENTER = Vec2(RESOLUTION.i() / 2);
@@ -178,9 +178,6 @@ struct GameScene: public Scene<Context> {
 	void init() override {
 		player.size = context->sheets.militia.get_tile_size().to_f();
 		pause_texture->texture = context->assets.pause;
-		
-		std::cout << context->assets.pause.get_size().x << ' ' << context->assets.pause.get_size().y << std::endl;
-		std::cout << pause_texture->texture.size().x << ' ' << pause_texture->texture.size().y << std::endl;
 	}
 	
 	void check_active() {

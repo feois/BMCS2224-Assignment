@@ -2,7 +2,6 @@
 #ifndef ALIGNMENT_HPP
 #define ALIGNMENT_HPP
 
-#include "dependencies.hpp"
 #include "vec2.hpp"
 
 struct Alignment {

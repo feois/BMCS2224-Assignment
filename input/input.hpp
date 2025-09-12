@@ -3,11 +3,8 @@
 #define INPUT_HPP
 
 #include <dinput.h>
-#include "dependencies.hpp"
-#include "vec2.hpp"
-#include "utils.hpp"
-#include "result.hpp"
-#include "window.hpp"
+#include <engine/utils.hpp>
+#include <direct3d/window.hpp>
 
 Vec2i get_mouse_pos();
 

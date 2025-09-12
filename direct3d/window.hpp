@@ -2,11 +2,9 @@
 #ifndef WINDOW_HPP
 #define WINDOW_HPP
 
-#include <algorithm>
-#include "dependencies.hpp"
+#include "direct3d.hpp"
 #include "window_class.hpp"
-#include "vec2.hpp"
-#include "utils.hpp"
+#include <engine/vec2.hpp>
 
 class Device;
 

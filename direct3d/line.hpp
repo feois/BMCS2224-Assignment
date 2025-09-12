@@ -2,9 +2,8 @@
 #ifndef LINE_HPP
 #define LINE_HPP
 
-#include <span>
-#include "dependencies.hpp"
 #include "device.hpp"
+#include <span>
 
 class Line: public HResult, public Renderer {
     Box<ID3DXLine, RELEASE(ID3DXLine)> line;

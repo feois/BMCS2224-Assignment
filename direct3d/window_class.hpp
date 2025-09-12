@@ -2,8 +2,8 @@
 #ifndef WINDOW_CLASS_HPP
 #define WINDOW_CLASS_HPP
 
-#include "dependencies.hpp"
-#include "utils.hpp"
+#include "direct3d.hpp"
+#include <engine/utils.hpp>
 
 class WindowCallback {
 public:

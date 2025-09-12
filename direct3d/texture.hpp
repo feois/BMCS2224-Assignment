@@ -2,10 +2,8 @@
 #ifndef TEXTURE_HPP
 #define TEXTURE_HPP
 
-#include "dependencies.hpp"
-#include "result.hpp"
+#include "direct3d.hpp"
 #include "device.hpp"
-#include "utils.hpp"
 
 class Texture: public HResult {
 	Box<IDirect3DTexture9, RELEASE(IDirect3DTexture9)> texture;

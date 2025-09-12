@@ -2,7 +2,7 @@
 #ifndef TEXTURE_RECT_HPP
 #define TEXTURE_RECT_HPP
 
-#include "texture.hpp"
+#include <direct3d/texture.hpp>
 
 struct TextureRect {
     const Texture *texture = nullptr;

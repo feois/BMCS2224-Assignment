@@ -1,8 +1,5 @@
 
-#include "dependencies.hpp"
 #include "window.hpp"
-#include "device.hpp"
-#include "utils.hpp"
 
 Window::Window(const WindowClass &wc, LPCTSTR name, Vec2i pos, Vec2i size, int show) {
     handle = CreateWindowEx(

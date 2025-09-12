@@ -2,11 +2,9 @@
 #ifndef FONT_HPP
 #define FONT_HPP
 
-#include "dependencies.hpp"
-#include "vec2.hpp"
-#include "device.hpp"
-#include "result.hpp"
+#include "direct3d.hpp"
 #include "sprite.hpp"
+#include <engine/alignment.hpp>
 
 struct TextConfig: public HResult {
 	#define tc_member(t, n, v) t n = v; \

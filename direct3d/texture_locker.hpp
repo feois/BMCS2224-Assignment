@@ -2,11 +2,9 @@
 #ifndef TEXTURE_LOCKER_HPP
 #define TEXTURE_LOCKER_HPP
 
-#include "dependencies.hpp"
+#include "direct3d.hpp"
 #include "texture.hpp"
-#include "result.hpp"
-#include "color.hpp"
-#include "utils.hpp"
+#include <engine/color.hpp>
 
 class TextureReader: public HResult {
 protected:

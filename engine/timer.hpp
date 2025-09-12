@@ -2,7 +2,7 @@
 #ifndef TIMER_HPP
 #define TIMER_HPP
 
-#include "dependencies.hpp"
+#include <windows.h>
 
 class Timer {
 public:

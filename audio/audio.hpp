@@ -3,8 +3,8 @@
 #define AUDIO_HPP
 
 #include <fmod.hpp>
-#include "utils.hpp"
-#include "result.hpp"
+#include <engine/result.hpp>
+#include <engine/utils.hpp>
 
 class Fmod;
 class Sound;

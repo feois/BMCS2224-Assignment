@@ -2,10 +2,10 @@
 #ifndef UI_HPP
 #define UI_HPP
 
-#include "vec2.hpp"
-#include "font.hpp"
-#include "texture_rect.hpp"
+#include <direct3d/font.hpp>
+#include <engine/texture_rect.hpp>
 #include <ranges>
+#include <functional>
 
 class UI {
     Vec2i position {};
@@ -347,7 +347,7 @@ struct TextureUI: public UI {
     
     TextureUI(TextureRect texture): texture(texture) {}
     
-    void calc_min_size(Drawer &drawer) override { min_size = texture.size(); }
+    void calc_min_size([[maybe_unused]] Drawer &drawer) override { min_size = texture.size(); }
     void draw(Drawer &drawer, Renderer* z_order) override {
         if (z_order == &drawer.texture) drawer.texture.draw(texture, get_position());
     }

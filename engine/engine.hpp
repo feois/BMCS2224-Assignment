@@ -2,23 +2,16 @@
 #ifndef GAME_HPP
 #define GAME_HPP
 
-#include "window.hpp"
-#include "device.hpp"
-#include "sprite.hpp"
-#include "line.hpp"
-#include "utils.hpp"
-#include "keyboard.hpp"
-#include "mouse.hpp"
-#include "audio.hpp"
+#include <direct3d/font.hpp>
+#include <input/keyboard.hpp>
+#include <input/mouse.hpp>
+#include <audio/audio.hpp>
+#include <ui/ui.hpp>
+#include "sprite_sheet.hpp"
 #include "timer.hpp"
 #include "animation.hpp"
-#include "texture_locker.hpp"
-#include "font.hpp"
-#include "ui.hpp"
-#include "physics.hpp"
-#include "sprite_sheet.hpp"
-#include "direction.hpp"
-#include <vector>
+#include "utils.hpp"
+#include <algorithm>
 
 template<typename C>
 class Engine;

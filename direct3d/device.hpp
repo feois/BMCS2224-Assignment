@@ -2,11 +2,10 @@
 #ifndef DEVICE_HPP
 #define DEVICE_HPP
 
-#include "dependencies.hpp"
-#include "result.hpp"
+#include "direct3d.hpp"
 #include "window.hpp"
-#include "color.hpp"
-#include "vec2.hpp"
+#include <engine/color.hpp>
+#include <engine/vec2.hpp>
 
 class Texture;
 

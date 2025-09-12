@@ -2,16 +2,16 @@
 #ifndef UTILS_HPP
 #define UTILS_HPP
 
-#include "dependencies.hpp"
-#include "vec2.hpp"
+#include <windows.h>
 #include <utility>
 #include <new>
 #include <array>
-#include <strsafe.h>
 #include <vector>
 #include <span>
 #include <string>
 #include <string_view>
+#include <memory>
+#include <strsafe.h>
 
 template<typename T>
 using Rc = std::shared_ptr<T>;

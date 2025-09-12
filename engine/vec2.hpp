@@ -2,7 +2,7 @@
 #ifndef VEC2_HPP
 #define VEC2_HPP
 
-#include "dependencies.hpp"
+#include <windows.h>
 #include "angle.hpp"
 #include "direction.hpp"
 
