@@ -56,10 +56,9 @@ Vec2i Font::get_size(TStr str, Vec2i pos, TextConfig config) {
         sprite->SetTransform(&t);
         result = font->DrawText(&*sprite, str.data(), str.size(), &rect, config.flags() | DT_CALCRECT, config.color.d3d());
         
-        config.size = Vec2i(rect.right - rect.left, rect.bottom - rect.top);
+        return Vec2i(rect.right - rect.left, rect.bottom - rect.top);
     }
-    
-    return config.size;
+    else return config.size;
 }
 
 Font& Font::write(TStr str, Vec2i pos, TextConfig config) {

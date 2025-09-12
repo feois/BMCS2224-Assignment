@@ -1,6 +1,5 @@
 {
     "files.associations": {
-        "payload.h": "c",
         "cassert": "cpp",
         "cstring": "cpp",
         "array": "cpp",
@@ -66,6 +65,8 @@
         "mutex": "cpp",
         "semaphore": "cpp",
         "stop_token": "cpp",
-        "thread": "cpp"
+        "thread": "cpp",
+        "queue": "cpp",
+        "reference": "cpp"
     }
 }

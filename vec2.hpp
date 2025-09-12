@@ -90,16 +90,6 @@ struct Vec2i {
     constexpr Vec2i flip_x() const { return Vec2i(-x, y); }
     constexpr Vec2i flip_y() const { return Vec2i(x, -y); }
     
-    constexpr bool in_rect(RECT rect) const { return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom; }
-    constexpr bool in_rect(Vec2i pos, Vec2i size) const {
-        RECT r;
-        r.right = r.left = pos.x;
-        r.bottom = r.top = pos.y;
-        r.right += size.x;
-        r.bottom += size.y;
-        return in_rect(r);
-    }
-    
     constexpr bool operator ==(const Vec2i &v) const { return x == v.x && y == v.y; }
     constexpr bool operator !=(const Vec2i &v) const { return x != v.x || y != v.y; }
     

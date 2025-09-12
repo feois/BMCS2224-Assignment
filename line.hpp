@@ -6,7 +6,7 @@
 #include "dependencies.hpp"
 #include "device.hpp"
 
-class Line: public HResult, public Drawer {
+class Line: public HResult, public Renderer {
     Box<ID3DXLine, RELEASE(ID3DXLine)> line;
     
 public:
@@ -37,8 +37,8 @@ public:
 	}
 	
 	
-	void lost() { result = line->OnLostDevice(); }
-	void reset() { result = line->OnResetDevice(); }
+	void lost() override { result = line->OnLostDevice(); }
+	void reset() override { result = line->OnResetDevice(); }
 	
 	WRAP(ID3DXLine, line.get());
 };

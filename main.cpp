@@ -1,5 +1,6 @@
 
 #include "game.hpp"
+#include <iostream>
 
 constexpr auto RESOLUTION = Vec2(800, 600);
 constexpr auto CENTER = Vec2(RESOLUTION.i() / 2);
@@ -14,7 +15,7 @@ constexpr auto BUTTON_BORDER_WIDTH = 1;
 
 struct Assets {
 	std::shared_ptr<Texture> pointer;
-	Texture militia, shuriken, bomb, explosion_effect;
+	Texture militia, shuriken, bomb, explosion_effect, pause;
 	std::array<Sound, 6> explosion;
 };
 
@@ -22,39 +23,38 @@ struct Sheets {
 	SpriteSheet militia, shuriken, bomb, explosion;
 };
 
-struct MyGame: public Game {
-	Box<Assets> assets;
-	Box<Sheets> sheets;
-	
+struct Context {
+	Assets assets;
+	Sheets sheets;
 	int level = 0;
 	
-    MyGame(int show): Game(TITLE, Vec2(300, 300), RESOLUTION, FPS, show) {
+	Context(Engine<Context> &engine)
+	: assets {
+		.pointer = std::make_unique<Texture>(engine.device, TEXT(ASSETS_DIR "pointer.png")),
+		.militia = Texture(engine.device, TEXT(ASSETS_DIR "militia.png")),
+		.shuriken = Texture(engine.device, TEXT(ASSETS_DIR "Shuriken.png")),
+		.bomb = Texture(engine.device, TEXT(ASSETS_DIR "Bomb.png")),
+		.explosion_effect = Texture(engine.device, TEXT(ASSETS_DIR "Blast.png")),
+		.pause = Texture(engine.device, TEXT(ASSETS_DIR "pause.png")),
+		.explosion = {
+			Sound(engine.fmod, ASSETS_DIR "explosion1.ogg"),
+			Sound(engine.fmod, ASSETS_DIR "explosion2.ogg"),
+			Sound(engine.fmod, ASSETS_DIR "explosion3.ogg"),
+			Sound(engine.fmod, ASSETS_DIR "explosion4.ogg"),
+			Sound(engine.fmod, ASSETS_DIR "explosion5.ogg"),
+			Sound(engine.fmod, ASSETS_DIR "explosion6.ogg"),
+		},
+	}, sheets {
+		.militia = SpriteSheet::with_sheet_size(assets.militia, Vec2(4, 4)),
+		.shuriken = SpriteSheet::with_sheet_size(assets.shuriken, Vec2(8, 1)),
+		.bomb = SpriteSheet::with_sheet_size(assets.bomb, Vec2(5, 1)),
+		.explosion = SpriteSheet::with_sheet_size(assets.explosion_effect, Vec2(3, 3)),
+	} {}
+};
+
+struct MyGame: public Engine<Context> {
+    MyGame(int show): Engine(TITLE, Vec2(300, 300), RESOLUTION, FPS, show) {
 		background = Colors::WHITE;
-		
-		assets = new Assets {
-			.pointer = std::make_unique<Texture>(device, TEXT(ASSETS_DIR "pointer.png")),
-			.militia = Texture(device, TEXT(ASSETS_DIR "militia.png")),
-			.shuriken = Texture(device, TEXT(ASSETS_DIR "Shuriken.png")),
-			.bomb = Texture(device, TEXT(ASSETS_DIR "Bomb.png")),
-			.explosion_effect = Texture(device, TEXT(ASSETS_DIR "Blast.png")),
-			.explosion = {
-				Sound(fmod, ASSETS_DIR "explosion1.ogg"),
-				Sound(fmod, ASSETS_DIR "explosion2.ogg"),
-				Sound(fmod, ASSETS_DIR "explosion3.ogg"),
-				Sound(fmod, ASSETS_DIR "explosion4.ogg"),
-				Sound(fmod, ASSETS_DIR "explosion5.ogg"),
-				Sound(fmod, ASSETS_DIR "explosion6.ogg"),
-			},
-		};
-		
-		sheets = new Sheets {
-			.militia = SpriteSheet::with_sheet_size(assets->militia, Vec2(4, 4)),
-			.shuriken = SpriteSheet::with_sheet_size(assets->shuriken, Vec2(8, 1)),
-			.bomb = SpriteSheet::with_sheet_size(assets->bomb, Vec2(5, 1)),
-			.explosion = SpriteSheet::with_sheet_size(assets->explosion_effect, Vec2(3, 3)),
-		};
-		
-		pointer_texture = assets->pointer;
 	}
     
     bool on_keydown(WPARAM key, [[maybe_unused]] LPARAM lParam) {
@@ -94,11 +94,9 @@ struct Entity: public Rect {
 	Entity(Vec2f pos, Vec2f size): Rect(pos, size) {}
 };
 
-struct GameScene: public SceneContext<MyGame> {
-	constexpr static auto HP_LABEL_POS = Vec2i(RESOLUTION.ix(), 0) - Vec2(20, -20);
-	
-	std::shared_ptr<Label> hp_label;
-	std::shared_ptr<Button> pause_button;
+struct GameScene: public Scene<Context> {
+	Label* hp_label = nullptr;
+	TextureUI* pause_texture = nullptr;
 	
 	Rect camera { -CENTER.f(), RESOLUTION };
 	Rect large_camera { -RESOLUTION.f(), RESOLUTION.f() * 2 };
@@ -126,32 +124,43 @@ struct GameScene: public SceneContext<MyGame> {
 	Animation grinder_animation {
 		FPS / 15,
 		8,
-		[&](int frame) { return context().sheets->shuriken.tile(frame); },
+		[&](int frame) { return context->sheets.shuriken.tile(frame); },
 	};
 	
 	GameScene() {
-		hp_label = std::make_shared<Label>(
-			Label()
-				.set_background(Colors::ZERO)
-				.set_config(TextConfig().set_alignment({ Alignment::Right }))
-		);
-		pause_button = std::make_shared<Button>(
-			Button(
-				Label()
-					.set_pos(Vec2(20, 20))
-					.set_text(TEXT("pause"))
-					.set_background(BUTTON_COLOR)
-					.set_border(BUTTON_BORDER)
-					.set_border_width(BUTTON_BORDER_WIDTH),
-				[&]() { paused = !paused; }
-			)
-		);
+		ui = new Padding {
+			{ 20, 20 },
+			new StackContainer {
+				new AlignContainer {
+					{ Alignment::Top, Alignment::Right },
+					hp_label = new Label {
+						TEXT(""),
+						Colors::ZERO,
+						0,
+						Colors::ZERO,
+						{},
+						{}
+					}
+				},
+				new AlignContainer {
+					{ Alignment::Top, Alignment::Left },
+					new Button {
+						BUTTON_COLOR,
+						BUTTON_BORDER_WIDTH,
+						BUTTON_BORDER,
+						{},
+						pause_texture = new TextureUI { {} },
+						[&]() { paused = !paused; },
+					}
+				},
+			}
+		};
 		
 		player.animation = new Animation(FPS / 12, 4, [&](int frame) {
 			auto row = player_last_direction == Direction::Left ? 1 : 2;
 			auto col = player.on_floor ? frame : 1;
 			
-			return context().sheets->militia.tile(row, col);
+			return context->sheets.militia.tile(row, col);
 		});
 		
 		update_hp();
@@ -160,22 +169,18 @@ struct GameScene: public SceneContext<MyGame> {
 	Vec2f gravity() const { return Vec2i(gravity_direction).to_f() * gravity_speed; }
 	
 	void update_hp() {
-		auto a = format("HP Left: %d", hp);
-		hp_string = own_str(a);
-		hp_label->set_text(hp_string.data());
+		hp_string = format("HP Left: %d", hp);
+		hp_label->set_text(hp_string);
 		
-		if (hp <= 0) context().scenes.pop_back();
+		if (hp <= 0) engine->scenes.pop_back();
 	}
 	
 	void init() override {
-		player.size = context().sheets->militia.get_tile_size().to_f();
-	}
-	
-	void init_ui() override {
-		context().ui_elements = {
-			hp_label,
-			pause_button,
-		};
+		player.size = context->sheets.militia.get_tile_size().to_f();
+		pause_texture->texture = context->assets.pause;
+		
+		std::cout << context->assets.pause.get_size().x << ' ' << context->assets.pause.get_size().y << std::endl;
+		std::cout << pause_texture->texture.size().x << ' ' << pause_texture->texture.size().y << std::endl;
 	}
 	
 	void check_active() {
@@ -192,9 +197,9 @@ struct GameScene: public SceneContext<MyGame> {
 	}
 	
 	void entity_physics(Entity &entity) {
-		if (!entity.on_floor) entity.velocity += gravity() * static_cast<float>(context().frame());
+		if (!entity.on_floor) entity.velocity += gravity() * static_cast<float>(engine->frame());
 		
-		entity.position += entity.velocity * static_cast<float>(context().frame());
+		entity.position += entity.velocity * static_cast<float>(engine->frame());
 		entity.on_floor = false;
 	}
 	
@@ -223,11 +228,11 @@ struct GameScene: public SceneContext<MyGame> {
 			double_jump = false;
 		}
 		
-		if (context().keyboard) {
+		if (engine->keyboard) {
 			auto d = Direction::None;
 			
-			if (context().keyboard.key_pressed(DIK_A)) d += Direction::Left;
-			if (context().keyboard.key_pressed(DIK_D)) d += Direction::Right;
+			if (engine->keyboard.key_pressed(DIK_A)) d += Direction::Left;
+			if (engine->keyboard.key_pressed(DIK_D)) d += Direction::Right;
 			
 			player.direction = d;
 			
@@ -235,7 +240,7 @@ struct GameScene: public SceneContext<MyGame> {
 			
 			player.velocity.x = static_cast<float>(Vec2i(d).x * 10);
 			
-			if (context().keyboard.key_just_pressed(DIK_W)) {
+			if (engine->keyboard.key_just_pressed(DIK_W)) {
 				if (player.on_floor) {
 					jump();
 					player.on_floor = false;
@@ -263,28 +268,26 @@ struct GameScene: public SceneContext<MyGame> {
 			}
 		}
 		
-		if (invulnerable > 0) invulnerable -= context().frame();
+		if (invulnerable > 0) invulnerable -= engine->frame();
 		if (invulnerable < 0) invulnerable = 0;
 	}
 	
 	Sprite& draw(const TextureRect &texture, Vec2f pos = Vec2(), Vec2i center = Vec2(), Color modulate = Colors::WHITE) {
-		return context().sprites[Game::general].draw(texture, (pos - camera.position).to_i(), center, modulate);
+		return engine->sprite.draw(texture, (pos - camera.position).to_i(), center, modulate);
 	}
 	
 	Sprite& draw(const TextureRect &texture, const Transform &transform, Color modulate = Colors::WHITE) {
-		return context().sprites[Game::general].draw(texture, transform + Translate(-camera.position), modulate);
-	}
-	
-	Sprite& draw_rect(Vec2f pos, Vec2f size, Color color) {
-		return context().draw_rect(Game::general, pos - camera.position, size, color);
+		return engine->sprite.draw(texture, transform + Translate(-camera.position), modulate);
 	}
 	
 	void render() override {
 		camera.position = player.center() - CENTER;
 		large_camera.position = player.center() - RESOLUTION;
 		
-		if (player.direction == Direction::None || !player.on_floor) player.animation->reset();
-		else player.animation->update(context().frame());
+		if (!paused) {
+			if (player.direction == Direction::None || !player.on_floor) player.animation->reset();
+			else player.animation->update(engine->frame());
+		}
 
 		draw(
 			player.animation->get_texture_rect(),
@@ -294,19 +297,17 @@ struct GameScene: public SceneContext<MyGame> {
 		);
 		
 		for (auto& wall : active_walls) {
-			draw_rect(wall->position, wall->size, wall->color);
+			engine->sprite.draw_rect(wall->position - camera.position, wall->size, wall->color);
 		}
 		
 		for (auto& grinder : active_grinders) {
-			auto transform = Transform(context().sheets->shuriken.get_tile_size().to_f() / 2)
+			auto transform = Transform(context->sheets.shuriken.get_tile_size().to_f() / 2)
 				+ Scale(grinder->scale)
 				+ Translate(grinder->position);
 			
-			grinder->animation.update(context().frame());
+			if (!paused) grinder->animation.update(engine->frame());
 			draw(grinder->animation.get_texture_rect(), transform);
 		}
-		
-		hp_label->anchor(context(), HP_LABEL_POS);
 	}
 };
 
@@ -344,7 +345,7 @@ struct Level2: public GameScene {
 	Animation explosion_animation {
 		FPS / 15,
 		6,
-		[&](int frame) { return context().sheets->explosion.tile(frame); },
+		[&](int frame) { return context->sheets.explosion.tile(frame); },
 		false,
 	};
 	float noise_range = 500;
@@ -361,25 +362,25 @@ struct Level2: public GameScene {
 	void physics() override {
 		GameScene::physics();
 		
-		if (context().mouse) {
-			if (context().mouse.right_click()) {
-				auto n = (context().mouse_pos.to_f() - (player.position - camera.position)).normalize();
+		if (engine->mouse) {
+			if (engine->mouse.right_click()) {
+				auto n = (engine->mouse_pos.to_f() - (player.position - camera.position)).normalize();
 				
 				bombs.push_back(Bomb(player.position, 10, n * 10));
 			}
 		}
 		
-		if (context().keyboard) {
-			if (context().keyboard.key_just_pressed(DIK_SPACE)) {
+		if (engine->keyboard) {
+			if (engine->keyboard.key_just_pressed(DIK_SPACE)) {
 				for (Bomb &bomb : bombs) {
-					const auto &sounds = context().assets->explosion;
+					const auto &sounds = context->assets.explosion;
 					const auto &sound = sounds[rand() % sounds.size()];
 					
 					Effect effect {
 						explosion_animation,
 						bomb.position,
-						context().fmod.channel(sound),
-						Transform(context().sheets->explosion.get_tile_size().to_f() / 2) + Scale(Vec2(3, 3)),
+						engine->fmod.channel(sound),
+						Transform(context->sheets.explosion.get_tile_size().to_f() / 2) + Scale(Vec2(3, 3)),
 					};
 					
 					effect.channel.play();
@@ -412,17 +413,17 @@ struct Level2: public GameScene {
 				}
 			}
 			
-			if (g) bomb.velocity += gravity() * static_cast<float>(context().frame());
-			else bomb.velocity *= static_cast<float>(std::pow(friction, context().frame()));
+			if (g) bomb.velocity += gravity() * static_cast<float>(engine->frame());
+			else bomb.velocity *= static_cast<float>(std::pow(friction, engine->frame()));
 			
-			bomb.position += bomb.velocity * static_cast<float>(context().frame());
+			bomb.position += bomb.velocity * static_cast<float>(engine->frame());
 		}
 	}
 	
 	void render() {
 		GameScene::render();
 		
-		for (Bomb &bomb : bombs) draw(context().sheets->bomb.tile(0), bomb.position, Vec2i(16, 24));
+		for (Bomb &bomb : bombs) draw(context->sheets.bomb.tile(0), bomb.position, Vec2i(16, 24));
 		
 		effects.erase(
 			std::remove_if(effects.begin(), effects.end(), [&](auto& effect) {
@@ -434,7 +435,7 @@ struct Level2: public GameScene {
 				if (effect.animation.playing())
 					draw(effect.animation.get_texture_rect(), effect.transform + Translate(effect.position));
 				
-				effect.animation.update(context().frame());
+				effect.animation.update(engine->frame());
 				
 				// remove effect if animation and sound finished
 				return effect.animation.finished() && !effect.channel;
@@ -450,150 +451,139 @@ struct Level3: public GameScene {
 	}
 };
 
-struct LevelSelect: public SceneContext<MyGame> {
-	struct Level: public UI {
+struct LevelSelect: public Scene<Context> {
+	struct Level: public CompositeUI<Button> {
 		constexpr static auto SIZE = Vec2(150, 150);
 		constexpr static auto COLOR = Color(127, 191, 127);
-		constexpr static auto HOVER = highlight(COLOR);
 		
-		std::shared_ptr<Label> label;
-		
-		Vec2 pos;
 		int level;
 		TString title;
-		MyGame *game = nullptr;
+		LevelSelect *root;
 		
-		Level(int level): level(level) {
-			auto a = format<16>(TEXT("Level %d"), level);
-			title = own_str(a);
-			
-			label = std::make_unique<Label>(
-				Label()
-					.set_text(title.data())
-					.set_background(Colors::ZERO)
-					.set_config(TextConfig().set_alignment({ Alignment::Center, Alignment::Bottom }))
-					.set_padding(Vec2i(10, 10))
-			);
-		}
+		Text *text;
 		
-		Vec2i center() const { return pos.i() + SIZE.i() / 2; }
-		
-		Vec2i position() override { return pos; }
-		Vec2i size() { return SIZE; }
-		void draw(Game &game) override {
-			game.sprites[Game::ui_background].flush();
-			game.draw_rect(Game::ui_background, pos, SIZE, hover ? HOVER : COLOR).flush();
-			label->anchor(game, Vec2(center().x, pos.iy() + SIZE.iy()));
-			label->draw(game);
-		}
-		bool on_click() override {
-			GameScene *scene = nullptr;
-			
-			switch (level) {
-				case 1: scene = new Level1(); break;
-				case 2: scene = new Level2(); break;
-				case 3: scene = new Level3(); break;
+		Level(LevelSelect &root, int level)
+		: CompositeUI {
+			Button {
+				COLOR,
+				0,
+				Colors::ZERO,
+				{ 10, 10 },
+				new VContainer {
+					Stretch(1, new AlignContainer {
+						{ Alignment::Center, Alignment::VCenter },
+						new Margin({}) // todo dummy
+					}),
+					new AlignContainer {
+						Alignment::Center,
+						text = new Text {
+							TEXT(""),
+							{},
+						},
+					},
+				},
+				[&]() {
+					Scene *scene = nullptr;
+					
+					switch (this->level) {
+						case 1: scene = new Level1(); break;
+						case 2: scene = new Level2(); break;
+						case 3: scene = new Level3(); break;
+					}
+					
+					if (scene) this->root->engine->scenes.push_back(Rc<Scene>(scene));
+				}
 			}
+		}, level(level), root(&root) {
+			title = format("Level %d", level);
 			
-			if (scene) game->scenes.push_back(std::shared_ptr<Scene>(scene));
-			
-			return true;
+			text->text = title;
 		}
+		
+		void calc_min_size(Drawer &drawer) { ui.calc_min_size(drawer); min_size = SIZE; }
+		bool on_click() override { return ui.on_click(); }
 	};
 	
-	std::vector<std::shared_ptr<Level>> levels;
-	std::shared_ptr<Button> cancel;
-	
 	LevelSelect() {
-		constexpr Alignment a { Alignment::Center, Alignment::VCenter };
-		constexpr auto w = 500;
-		
-		for (int i = 1; i <= LEVELS; i++) levels.push_back(std::make_unique<Level>(i));
-		for (int i = 0; i < LEVELS; i++) levels[i]->pos = a.anchor(Vec2i((RESOLUTION.ix() - w) / 2, CENTER.iy()) + Vec2i(w / (LEVELS - 1) * i, 0), Level::SIZE);
-		
-		cancel = std::make_shared<Button>(
-			Button {
-				Label()
-					.set_text(TEXT("Return to main menu"))
-					.set_background(BUTTON_COLOR)
-					.set_border(BUTTON_BORDER)
-					.set_border_width(BUTTON_BORDER_WIDTH)
-					.set_config(TextConfig().set_alignment({ Alignment::Center }))
-					.set_padding(Vec2(10, 10)),
-				[&]() { context().scenes.pop_back(); },
+		ui = new Padding {
+			{ 100, 100 },
+			new AlignContainer {
+				Alignment::VCenter,
+				new VContainer {
+					new HContainer {
+						new Level(*this, 1),
+						Stretch { 1, new Margin({}) },
+						new Level(*this, 2),
+						Stretch { 1, new Margin({}) },
+						new Level(*this, 3),
+					},
+					new Margin({ 0, 100 }),
+					new AlignContainer {
+						Alignment::Center,
+						new Button {
+							BUTTON_COLOR,
+							BUTTON_BORDER_WIDTH,
+							BUTTON_BORDER,
+							{ 10, 10 },
+							new Text { TEXT("Return to main menu"), {} },
+							[&]() { engine->scenes.pop_back(); }
+						},
+					},
+				}
 			}
-		);
-	}
-	
-	void init() override {
-		cancel->anchor(context(), CENTER.i() + Vec2(0, 150));
-		
-		for (auto& level : levels) level->game = &context();
-	}
-	
-	void init_ui() override {
-		context().ui_elements = { levels.begin(), levels.end() };
-		context().ui_elements.push_back(cancel);
+		};
 	}
 };
 
-struct MainMenu: public SceneContext<MyGame> {
-	std::shared_ptr<Label> title;
-	std::shared_ptr<Button> start_button, quit_button;
-
-	TString s;
-	
+struct MainMenu: public Scene<Context> {
 	MainMenu() {
-		title = std::make_unique<Label>(
-			Label()
-				.set_text(TITLE)
-				.set_background(Colors::ZERO)
-				.set_config(TextConfig().set_alignment({ Alignment::Center }))
-		);
-		
-		start_button = std::make_unique<Button>(
-			Button(
-				Label()
-					.set_text(TEXT("Play"))
-					.set_background(BUTTON_COLOR)
-					.set_border(BUTTON_BORDER)
-					.set_border_width(BUTTON_BORDER_WIDTH)
-					.set_config(TextConfig().set_alignment({ Alignment::Center }))
-					.set_padding(Vec2(10, 10)),
-				[&]() { context().scenes.push_back(std::make_shared<LevelSelect>()); }
-			)
-		);
-		
-		quit_button = std::make_unique<Button>(
-			Button(
-				Label()
-					.set_text(TEXT("Exit"))
-					.set_background(BUTTON_COLOR)
-					.set_border(BUTTON_BORDER)
-					.set_border_width(BUTTON_BORDER_WIDTH)
-					.set_config(TextConfig().set_alignment({ Alignment::Center }))
-					.set_padding(Vec2(10, 10)),
-				[&]() { context().quit(); }
-			)
-		);
-	}
-	
-	void init() override {
-		title->anchor(context(), CENTER.i() - Vec2(0, 100));
-		start_button->anchor(context(), CENTER.i() + Vec2(0, 50));
-		quit_button->anchor(context(), CENTER.i() + Vec2(0, 150));
-	}
-	
-	void init_ui() override {
-		context().ui_elements = { title, start_button, quit_button };
+		ui = new AlignContainer {
+			{ Alignment::Center, Alignment::VCenter },
+			new VContainer {
+				new Label {
+					TITLE,
+					Colors::ZERO,
+					0,
+					Colors::ZERO,
+					{ 10, 10 },
+					{}
+				},
+				new Margin({ 0, 100 }),
+				new AlignContainer {
+					Alignment::Center,
+					new Button {
+						BUTTON_COLOR,
+						BUTTON_BORDER_WIDTH,
+						BUTTON_BORDER,
+						{ 10, 10 },
+						new Text { TEXT("Play"), {} },
+						[&]() { engine->scenes.push_back(std::make_shared<LevelSelect>()); },
+					},
+				},
+				new Margin({ 0, 50 }),
+				new AlignContainer {
+					Alignment::Center,
+					new Button {
+						BUTTON_COLOR,
+						BUTTON_BORDER_WIDTH,
+						BUTTON_BORDER,
+						{ 10, 10 },
+						new Text { TEXT("Exit"), {} },
+						[&]() { engine->quit(); },
+					},
+				},
+			},
+		};
 	}
 };
 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int nShowCmd) {
-    auto game = std::make_unique<MyGame>(nShowCmd);
+    auto engine = std::make_unique<MyGame>(nShowCmd);
+	auto context = std::make_unique<Context>(*engine);
     
-	game->scenes.push_back(std::make_shared<MainMenu>());
-    game->run();
+	engine->pointer_texture = context->assets.pointer;
+	engine->scenes.push_back(std::make_shared<MainMenu>());
+    engine->run(*context);
 	
 	return 0;
 }

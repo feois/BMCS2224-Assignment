@@ -13,11 +13,11 @@
 #include <string>
 #include <string_view>
 
-#define NO_MOVE(class) \
-    class(const class &) = delete; \
-    class& operator =(const class &) = delete; \
-    class(class &&other) = delete; \
-    class& operator =(class &&other) = delete; \
+template<typename T>
+using Rc = std::shared_ptr<T>;
+
+using TString = std::basic_string<TCHAR>;
+using TStr = std::basic_string_view<TCHAR>;
 
 #define MOVE_ONLY(class) \
     class(const class &) = delete; \
@@ -47,42 +47,59 @@
     w = s; \
     return s; \
 
-constexpr size_t DEFAULT_FORMAT_BUFFER_SIZE = 256;
-
-template<size_t BUFFER_SIZE = DEFAULT_FORMAT_BUFFER_SIZE, typename... T>
-std::array<TCHAR, BUFFER_SIZE> format(LPCTSTR f, T&&... t) {
-    std::array<TCHAR, BUFFER_SIZE> s {};
-    StringCchPrintf(s.data(), s.size(), f, std::forward<T>(t)...);
-    return s;
+// format returns a temporary string, therefore it will be destroyed by the end of statement
+template<size_t FORMAT_LENGTH, typename... T>
+TString format(LPCTSTR f, T&&... t) {
+    size_t extra = 32;
+    TString s;
+    while (true) {
+        size_t size = FORMAT_LENGTH + extra;
+        s.reserve(size);
+        s.resize(size); // resize first so internal length is equal to capacity and resize later will not overwrite
+        switch (StringCchPrintf(s.data(), size + 1, f, std::forward<T>(t)...)) {
+            case S_OK:
+                s.resize(
+                    #ifdef UNICODE
+                    wcslen(s.data())
+                    #else
+                    strlen(s.data())
+                    #endif
+                );
+                return s;
+            case STRSAFE_E_INSUFFICIENT_BUFFER:
+                extra += extra / 2;
+                break;
+            case STRSAFE_E_INVALID_PARAMETER: // string too long
+            default: // unknown error
+                exit(999);
+        }
+    }
 }
 
-template<size_t BUFFER_SIZE = DEFAULT_FORMAT_BUFFER_SIZE, typename... T>
+template<size_t FORMAT_LENGTH, typename... T>
 void error(LPCTSTR f, T&&... t) {
-	MessageBox(nullptr, format(f, std::forward<T>(t)...).data(), TEXT("Error"), MB_OK | MB_ICONERROR);
+	MessageBox(nullptr, format<FORMAT_LENGTH>(f, std::forward<T>(t)...).data(), TEXT("Error"), MB_OK | MB_ICONERROR);
 }
 
-template<size_t BUFFER_SIZE = DEFAULT_FORMAT_BUFFER_SIZE, typename... T>
+template<size_t FORMAT_LENGTH, typename... T>
 void panic(int code, LPCTSTR f, T&&... t) {
-    error(f, std::forward<T>(t)...);
+    error<FORMAT_LENGTH>(f, std::forward<T>(t)...);
     exit(code);
 }
 
-template<typename T, typename... U>
+template<size_t FORMAT_LENGTH, typename T, typename... U>
 static T panic_if_failed(T t, int code, LPCTSTR s, U&&... u) {
-    if (t.failed()) (panic)(code, s, std::forward<U>(u)...);
+    if (t.failed()) panic<FORMAT_LENGTH>(code, s, std::forward<U>(u)...);
     return t;
 }
 
-#define format(f, ...) format(TEXT(f) __VA_OPT__(,) __VA_ARGS__)
-#define error(f, ...) error(TEXT(f) __VA_OPT__(,) __VA_ARGS__)
-#define panic(c, f, ...) panic(c, TEXT(f) __VA_OPT__(,) __VA_ARGS__)
-#define panic_if_failed(t, c, f, ...) panic_if_failed(t, c, TEXT(f) __VA_OPT__(,) __VA_ARGS__)
+#define format(f, ...) format<std::char_traits<TCHAR>::length(TEXT(f))>(TEXT(f) __VA_OPT__(,) __VA_ARGS__)
+#define error(f, ...) error<std::char_traits<TCHAR>::length(TEXT(f))>(TEXT(f) __VA_OPT__(,) __VA_ARGS__)
+#define panic(c, f, ...) panic<std::char_traits<TCHAR>::length(TEXT(f))>(c, TEXT(f) __VA_OPT__(,) __VA_ARGS__)
+#define panic_if_failed(t, c, f, ...) panic_if_failed<sizeof(TEXT(f))>(t, c, TEXT(f) __VA_OPT__(,) __VA_ARGS__)
 
 template<typename T>
 void drop(T& t) { T temp(std::move(t)); }
-
-template<typename T>
-using Rc = std::shared_ptr<T>;
 
 template<typename T, void (*F)(T*) = nullptr>
 class Box {
@@ -98,7 +115,7 @@ public:
     constexpr Box(): object { nullptr, deleter() } {}
     
     constexpr Box(T* object): object { object, deleter() } {}
-    constexpr Box(T&& object): object { std::make_unique(std::move(object)), deleter() } {}
+    constexpr Box(T&& object): Box(new T(std::move(object))) {}
     
     constexpr T* get() const { return object.get(); }
     
@@ -106,23 +123,5 @@ public:
 
     WRAP(T, object.get());
 };
-
-template <typename T, std::size_t N, typename F, std::size_t... I>
-constexpr std::array<T, N> array_from_fn_impl(F&& f, std::index_sequence<I...>) {
-    return { { (static_cast<void>(I), f())... } };
-}
-
-template <typename T, std::size_t N, typename F>
-constexpr std::array<T, N> array_from_fn(F&& f) {
-    return array_from_fn_impl<T, N>(std::forward<F>(f), std::make_index_sequence<N>{});
-}
-
-using TString = std::basic_string<TCHAR>;
-using TStr = std::basic_string_view<TCHAR>;
-
-template<typename T, size_t N>
-std::vector<T> own(const std::span<T> array) { return { array.begin(), array.end() }; }
-
-inline TString own_str(const std::span<TCHAR> str) { return { str.data() }; }
 
 #endif

@@ -35,9 +35,11 @@ public:
 	WRAP(IDirect3DDevice9, device.get());
 };
 
-struct Drawer {
+struct Renderer {
 	virtual void begin() = 0;
 	virtual void end() = 0;
+	virtual void lost() = 0;
+	virtual void reset() = 0;
 	
 	void flush() {
 		end();

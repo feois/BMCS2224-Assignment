@@ -3,7 +3,7 @@
 #include <strsafe.h>
 #include "sprite.hpp"
 
-Sprite::Sprite(const Device &device) {
+Sprite::Sprite(const Device &device, Rc<Texture> rect_texture): rect_texture(rect_texture) {
     LPD3DXSPRITE p;
     result = D3DXCreateSprite(&*device, &p);
     sprite = p;

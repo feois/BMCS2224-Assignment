@@ -13,7 +13,7 @@ struct TextConfig: public HResult {
 		TextConfig set_##n(t n) const { auto tc = *this; tc.n = n; return tc; }
 	
 	tc_member(Vec2i, size, Vec2i());
-	tc_member(Alignment, alignment, Alignment(Alignment::Top, Alignment::Left));
+	tc_member(Alignment, alignment, Alignment(Alignment::Top, Alignment::Left))
 	tc_member(Color, color, Colors::BLACK);
     tc_member(Transform, transform, Transform());
 	
@@ -33,7 +33,7 @@ struct TextConfig: public HResult {
     DWORD flags() const;
 };
 
-class Font: public HResult, public Drawer {
+class Font: public HResult, public Renderer {
     Box<ID3DXFont, RELEASE(ID3DXFont)> font;
     Sprite sprite;
     
@@ -47,8 +47,8 @@ public:
     
 	Font& write(TStr str, Vec2i pos, TextConfig config = {});
 	
-    void lost();
-    void reset();
+    void lost() override;
+    void reset() override;
     
     WRAP(ID3DXFont, font.get());
 };

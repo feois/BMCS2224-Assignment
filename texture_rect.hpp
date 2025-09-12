@@ -11,6 +11,8 @@ struct TextureRect {
     TextureRect() {}
     TextureRect(const Texture &texture);
     TextureRect(const Texture &texture, const RECT &rect): texture(&texture), rect(rect) {}
+    
+    constexpr Vec2i size() const { return { rect.right - rect.left, rect.bottom - rect.top }; }
 };
 
 #endif

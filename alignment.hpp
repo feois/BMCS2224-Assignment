@@ -9,11 +9,13 @@ struct Alignment {
     enum Vertical { Top = -1, VCenter = 0, Bottom = 1 };
     enum Horizontal { Left = -1, Center = 0, Right = 1 };
     
-    Vertical vertical;
-    Horizontal horizontal;
+    Vertical vertical = Top;
+    Horizontal horizontal = Left;
     
-    constexpr Alignment(Vertical vertical, Horizontal horizontal = Left): vertical(vertical), horizontal(horizontal) {}
-    constexpr Alignment(Horizontal horizontal, Vertical vertical = Top): vertical(vertical), horizontal(horizontal) {}
+    constexpr Alignment() {}
+    
+    constexpr Alignment(Vertical vertical, Horizontal horizontal): vertical(vertical), horizontal(horizontal) {}
+    constexpr Alignment(Horizontal horizontal, Vertical vertical): vertical(vertical), horizontal(horizontal) {}
     
 	constexpr Vec2i anchor(Vec2i pos, Vec2i size) const {
 		return pos - Vec2i(static_cast<int>(horizontal) + 1, static_cast<int>(vertical) + 1).multiply(size) / 2;
