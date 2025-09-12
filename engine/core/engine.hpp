@@ -6,6 +6,7 @@
 #include <engine/input/keyboard.hpp>
 #include <engine/input/mouse.hpp>
 #include <engine/ui/ui.hpp>
+#include <engine/audio/audio.hpp>
 #include "timer.hpp"
 #include "scene.hpp"
 #include <algorithm>
