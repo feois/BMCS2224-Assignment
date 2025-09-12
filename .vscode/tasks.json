@@ -26,6 +26,7 @@
                 "-march=native",
                 "-std=c++20",
                 "-g",
+                "out/**/**/*.o",
                 "out/**/*.o",
                 "-o",
                 "main",

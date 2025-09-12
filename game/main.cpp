@@ -1,7 +1,7 @@
 
-#include <engine/engine.hpp>
-#include <physics/physics.hpp>
-#include <ui/prelude.hpp>
+#include <engine/core/engine.hpp>
+#include <engine/physics/physics.hpp>
+#include <engine/ui/prelude.hpp>
 
 constexpr auto RESOLUTION = Vec2(800, 600);
 constexpr auto CENTER = Vec2(RESOLUTION.i() / 2);
@@ -12,7 +12,7 @@ constexpr auto BUTTON_COLOR = Color(127, 127, 191);
 constexpr auto BUTTON_BORDER = Color(63, 63, 127);
 constexpr auto BUTTON_BORDER_WIDTH = 1;
 
-#define ASSETS_DIR "assets/"
+#define ASSETS_DIR "game/assets/"
 
 struct Assets {
 	Rc<Texture> pointer;

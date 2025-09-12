@@ -2,7 +2,7 @@
 #ifndef COLOR_HPP
 #define COLOR_HPP
 
-#include <direct3d/direct3d.hpp>
+#include <engine/direct3d/direct3d.hpp>
 
 struct Color {
     BYTE r;

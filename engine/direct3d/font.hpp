@@ -4,7 +4,7 @@
 
 #include "direct3d.hpp"
 #include "sprite.hpp"
-#include <engine/alignment.hpp>
+#include <engine/core/alignment.hpp>
 
 struct TextConfig: public HResult {
 	#define tc_member(t, n, v) t n = v; \

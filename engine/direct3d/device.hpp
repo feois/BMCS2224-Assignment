@@ -4,8 +4,8 @@
 
 #include "direct3d.hpp"
 #include "window.hpp"
-#include <engine/color.hpp>
-#include <engine/vec2.hpp>
+#include <engine/core/color.hpp>
+#include <engine/core/vec2.hpp>
 
 class Texture;
 

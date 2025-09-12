@@ -2,11 +2,11 @@
 #ifndef GAME_HPP
 #define GAME_HPP
 
-#include <direct3d/font.hpp>
-#include <input/keyboard.hpp>
-#include <input/mouse.hpp>
-#include <audio/audio.hpp>
-#include <ui/ui.hpp>
+#include <engine/direct3d/font.hpp>
+#include <engine/input/keyboard.hpp>
+#include <engine/input/mouse.hpp>
+#include <engine/audio/audio.hpp>
+#include <engine/ui/ui.hpp>
 #include "sprite_sheet.hpp"
 #include "timer.hpp"
 #include "animation.hpp"

@@ -6,13 +6,13 @@ CXXFLAGS = -MMD -MP -fdiagnostics-color=always -fno-exceptions -Wextra \
 	-L'prefix/drive_c/Program Files (x86)/FMOD SoundSystem/FMOD Studio API Windows/api/core/lib/x86' \
 	-lfmod -lgdi32 -ld3d9 -ld3dx9 -ldinput8 -ldxguid -static-libgcc -static-libstdc++ -static
 
-SRC_DIRS := audio direct3d engine game input physics ui
+SRC_DIRS := engine game
 TARGET_DIR := out
 TARGET := $(TARGET_DIR)/game     # final binary name
 
 # ==== BUILD LOGIC ====
 # Collect all .cpp files from SRC_DIRS
-SRCS := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.cpp))
+SRCS := $(foreach dir,$(SRC_DIRS),$(shell find $(dir) -name '*.cpp'))
 
 # Generate object and dependency file paths in TARGET_DIR
 OBJS := $(patsubst %.cpp,$(TARGET_DIR)/%.o,$(SRCS))

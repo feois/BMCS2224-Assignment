@@ -2,7 +2,7 @@
 #ifndef ANGLE_HPP
 #define ANGLE_HPP
 
-#include <direct3d/direct3d.hpp>
+#include <engine/direct3d/direct3d.hpp>
 
 class Angle {
     float radian;

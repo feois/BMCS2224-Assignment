@@ -4,7 +4,7 @@
 
 #include "direct3d.hpp"
 #include "window_class.hpp"
-#include <engine/vec2.hpp>
+#include <engine/core/vec2.hpp>
 
 class Device;
 

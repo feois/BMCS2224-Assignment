@@ -4,7 +4,7 @@
 
 #include "direct3d.hpp"
 #include "texture.hpp"
-#include <engine/color.hpp>
+#include <engine/core/color.hpp>
 
 class TextureReader: public HResult {
 protected:

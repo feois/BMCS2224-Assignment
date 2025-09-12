@@ -3,7 +3,7 @@
 #define WINDOW_CLASS_HPP
 
 #include "direct3d.hpp"
-#include <engine/utils.hpp>
+#include <engine/core/utils.hpp>
 
 class WindowCallback {
 public:

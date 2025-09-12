@@ -3,7 +3,7 @@
 #define TEXTURE_UI_HPP
 
 #include "ui.hpp"
-#include <engine/texture_rect.hpp>
+#include <engine/core/texture_rect.hpp>
 
 // draws texture
 struct TextureUI: public UI {

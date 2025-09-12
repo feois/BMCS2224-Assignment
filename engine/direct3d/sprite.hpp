@@ -4,8 +4,8 @@
 
 #include "direct3d.hpp"
 #include "texture_locker.hpp"
-#include <engine/texture_rect.hpp>
-#include <engine/transform.hpp>
+#include <engine/core/texture_rect.hpp>
+#include <engine/core/transform.hpp>
 
 class Sprite: public HResult, public Renderer {
 	Box<ID3DXSprite, RELEASE(ID3DXSprite)> sprite;

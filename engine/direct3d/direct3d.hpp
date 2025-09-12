@@ -6,8 +6,8 @@
 #include <windows.h>
 #include <d3dx9.h>
 #include <d3dx9math.h>
-#include <engine/utils.hpp>
-#include <engine/result.hpp>
+#include <engine/core/utils.hpp>
+#include <engine/core/result.hpp>
 
 HMODULE module_handle();
 
