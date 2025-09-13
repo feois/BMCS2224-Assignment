@@ -1,5 +1,7 @@
 
 #include <engine/prelude.hpp>
+#include <engine/physics/physics.hpp>
+#include <iostream>
 
 constexpr auto RESOLUTION = Vec2(800, 600);
 constexpr auto CENTER = Vec2(RESOLUTION.i() / 2);
@@ -72,45 +74,62 @@ struct MyGame: public Engine<Context> {
 	}
 };
 
-struct Wall: public Rect {
-	Color color = Color(63, 63, 191);
-	
-	Wall(Vec2f pos, Vec2f size): Rect(pos, size) {}
+enum PhysicsMask {
+	PLAYER,
+	WALL,
+	BOMB,
+	GRINDER,
 };
 
-struct Grinder: public Circle {
+struct Wall: public virtual RectBody, public virtual MaskBody<> {
+	Color color = Color(63, 63, 191);
+	
+	Wall(Vec2f pos, Vec2f size) {
+		position = pos;
+		this->size = size;
+		layer = { WALL };
+		is_static = true;
+		friction = 0.5;
+	}
+};
+
+struct Grinder: public virtual CircleBody, public virtual MaskBody<> {
 	Animation animation;
 	float scale;
 	
-	Grinder(float scale, Vec2f pos, Animation anim): Circle(pos, scale * 16), animation(anim), scale(scale) {}
+	Grinder(float scale, Vec2f pos, Animation anim): animation(anim), scale(scale) {
+		position = pos;
+		radius = scale * 16;
+	}
 };
 
-struct Entity: public Rect {
-	bool on_floor = false;
+struct Entity: public virtual RectBody, public virtual MaskBody<> {
 	Box<Animation> animation;
-	Direction direction = Direction::None;
+	int direction = 0;
 	
-	Entity(Vec2f pos, Vec2f size): Rect(pos, size) {}
+	Entity(Vec2f pos, Vec2f size) {
+		position = pos;
+		this->size = size;
+		mask = { WALL };
+		elasticity = 0;
+	}
 };
 
 struct GameScene: public Scene<Context> {
 	Label* hp_label = nullptr;
 	TextureUI* pause_texture = nullptr;
 	
-	Rect camera { -CENTER.f(), RESOLUTION };
-	Rect large_camera { -RESOLUTION.f(), RESOLUTION.f() * 2 };
+	RectBody camera {};
+	RectBody large_camera {};
 	
 	std::vector<Rc<Wall>> walls;
 	std::vector<Rc<Grinder>> grinders;
 	
-	Entity player { Vec2(), Vec2() };
-	Direction gravity_direction = Direction::Down;
-	float gravity_speed = 9.8f / FPS;
+	Rc<Entity> player = std::make_shared<Entity>(Vec2(), Vec2());
 	
-	Direction player_last_direction = Direction::Right;
+	PhysicsEngine<> physics_engine {};
 	
-	std::vector<Rc<Wall>> active_walls;
-	std::vector<Rc<Grinder>> active_grinders;
+	bool player_facing_right = true;
 	
 	int hp = 3;
 	TString hp_string;
@@ -155,17 +174,18 @@ struct GameScene: public Scene<Context> {
 			}
 		};
 		
-		player.animation = new Animation(FPS / 12, 4, [&](int frame) {
-			auto row = player_last_direction == Direction::Left ? 1 : 2;
-			auto col = player.on_floor ? frame : 1;
+		camera.size = RESOLUTION;
+		large_camera.size = RESOLUTION.f() * 2;
+		
+		player->animation = new Animation(FPS / 10, 4, [&](int frame) {
+			auto row = player_facing_right ? 2 : 1;
+			auto col = player->on_floor ? frame : 1;
 			
 			return context->sheets.militia.tile(row, col);
 		});
 		
 		update_hp();
 	}
-	
-	Vec2f gravity() const { return Vec2i(gravity_direction).to_f() * gravity_speed; }
 	
 	void update_hp() {
 		hp_string = format("HP Left: %d", hp);
@@ -175,71 +195,48 @@ struct GameScene: public Scene<Context> {
 	}
 	
 	void init() override {
-		player.size = context->sheets.militia.get_tile_size().to_f();
+		player->size = context->sheets.militia.get_tile_size().to_f();
 		pause_texture->texture = context->assets.pause;
-	}
-	
-	void check_active() {
-		active_walls.clear();
-		active_grinders.clear();
 		
-		for (auto& wall : walls) {
-			if (wall->check_collision(&large_camera)) active_walls.push_back(wall);
-		}
+		physics_engine.bodies.push_back(player);
 		
-		for (auto& grinder : grinders) {
-			if (grinder->check_collision(&large_camera)) active_grinders.push_back(grinder);
-		}
-	}
-	
-	void entity_physics(Entity &entity) {
-		if (!entity.on_floor) entity.velocity += gravity() * static_cast<float>(engine->frame());
-		
-		entity.position += entity.velocity * static_cast<float>(engine->frame());
-		entity.on_floor = false;
-	}
-	
-	void entity_wall(Entity &entity, Wall &wall) {
-		if (entity.check_collision(&wall)) {
-			auto p = Vec2i(wall.push_out(entity));
-			auto gd = -Vec2i(gravity_direction);
-			
-			if ((p.x == gd.x && p.x != 0) || (p.y == gd.y && p.y != 0)) entity.on_floor = true;
+		for (auto &wall : walls) {
+			physics_engine.bodies.push_back(wall);
 		}
 	}
 	
 	void jump() {
-		auto d = Vec2i(gravity_direction);
+		auto d = physics_engine.gravity_direction;
 		
-		if (d.x != 0) player.velocity.x = 0;
-		if (d.y != 0) player.velocity.y = 0;
+		if (d.x != 0) player->velocity.x = 0;
+		if (d.y != 0) player->velocity.y = 0;
 		
-		player.velocity += -d.to_f() * jump_power;
+		player->velocity += -d * jump_power;
 	}
 	
 	void physics() override {
 		if (paused) return;
 		
-		if (player.on_floor) {
+		if (player->on_floor) {
 			double_jump = false;
 		}
 		
 		if (engine->keyboard) {
-			auto d = Direction::None;
+			int d = 0;
 			
-			if (engine->keyboard.key_pressed(DIK_A)) d += Direction::Left;
-			if (engine->keyboard.key_pressed(DIK_D)) d += Direction::Right;
+			if (engine->keyboard.key_pressed(DIK_A)) d--;
+			if (engine->keyboard.key_pressed(DIK_D)) d++;
 			
-			player.direction = d;
+			player->direction = d;
 			
-			if (d != Direction::None) player_last_direction = player.direction;
+			if (d != 0) player_facing_right = d == 1;
 			
-			player.velocity.x = static_cast<float>(Vec2i(d).x * 10);
+			player->velocity.x = static_cast<float>(d) * 10;
 			
 			if (engine->keyboard.key_just_pressed(DIK_W)) {
-				if (player.on_floor) {
+				if (player->on_floor) {
 					jump();
-					player.on_floor = false;
+					player->on_floor = false;
 				}
 				else if (!double_jump) {
 					double_jump = true;
@@ -248,16 +245,10 @@ struct GameScene: public Scene<Context> {
 			}
 		}
 		
-		check_active();
+		physics_engine.process(engine->frame());
 		
-		entity_physics(player);
-		
-		for (auto& wall : active_walls) {
-			entity_wall(player, *wall);
-		}
-		
-		for (auto& grinder : active_grinders) {
-			if ((!invulnerable) && player.check_collision(&*grinder)) {
+		for (auto& grinder : grinders) {
+			if ((!invulnerable) && player->is_colliding(*grinder)) {
 				hp -= 1;
 				update_hp();
 				invulnerable = 30;
@@ -277,26 +268,30 @@ struct GameScene: public Scene<Context> {
 	}
 	
 	void render() override {
-		camera.position = player.center() - CENTER;
-		large_camera.position = player.center() - RESOLUTION;
+		camera.position = player->center() - CENTER;
+		large_camera.position = player->center() - RESOLUTION;
 		
 		if (!paused) {
-			if (player.direction == Direction::None || !player.on_floor) player.animation->reset();
-			else player.animation->update(engine->frame());
+			if (player->direction == 0 || !player->on_floor) player->animation->reset();
+			else player->animation->update(engine->frame());
 		}
 
 		draw(
-			player.animation->get_texture_rect(),
-			player.position,
+			player->animation->get_texture_rect(),
+			player->position,
 			Vec2(),
 			invulnerable % 3 == 1 ? Color(127, 127, 127) : Colors::WHITE
 		);
 		
-		for (auto& wall : active_walls) {
+		for (auto& wall : walls) {
+			if (!wall->is_colliding(large_camera)) continue;
+			
 			engine->sprite.draw_rect(wall->position - camera.position, wall->size, wall->color);
 		}
 		
-		for (auto& grinder : active_grinders) {
+		for (auto& grinder : grinders) {
+			if (!grinder->is_colliding(large_camera)) continue;
+			
 			auto transform = Transform(context->sheets.shuriken.get_tile_size().to_f() / 2)
 				+ Scale(grinder->scale)
 				+ Translate(grinder->position);
@@ -321,10 +316,15 @@ struct Level1: public GameScene {
 	}
 };
 
-struct Bomb: public Circle {
-	float mass;
-	
-	Bomb(Vec2f pos, float mass, Vec2f velocity): Circle(pos, 10, velocity), mass(mass) {}
+struct Bomb: public virtual CircleBody, virtual MaskBody<> {
+	Bomb(Vec2f pos, Vec2f velocity) {
+		position = pos;
+		radius = 10;
+		this->velocity = velocity;
+		layer = { BOMB };
+		mask = { WALL, BOMB };
+		elasticity = 0.75;
+	}
 };
 
 struct Effect {
@@ -335,7 +335,7 @@ struct Effect {
 };
 
 struct Level2: public GameScene {
-	std::vector<Bomb> bombs;
+	std::vector<Rc<Bomb>> bombs;
 	std::vector<Effect> effects;
 	
 	Animation explosion_animation {
@@ -360,21 +360,23 @@ struct Level2: public GameScene {
 		
 		if (engine->mouse) {
 			if (engine->mouse.right_click()) {
-				auto n = (engine->mouse_pos.to_f() - (player.position - camera.position)).normalize();
+				auto n = (engine->mouse_pos.to_f() - (player->position - camera.position)).normalize();
+				auto bomb = std::make_shared<Bomb>(player->position, n * 10);
 				
-				bombs.push_back(Bomb(player.position, 10, n * 10));
+				bombs.push_back(bomb);
+				physics_engine.bodies.push_back(bomb);
 			}
 		}
 		
 		if (engine->keyboard) {
 			if (engine->keyboard.key_just_pressed(DIK_SPACE)) {
-				for (Bomb &bomb : bombs) {
+				for (auto &bomb : bombs) {
 					const auto &sounds = context->assets.explosion;
 					const auto &sound = sounds[rand() % sounds.size()];
 					
 					Effect effect {
 						explosion_animation,
-						bomb.position,
+						bomb->position,
 						engine->fmod.channel(sound),
 						Transform(context->sheets.explosion.get_tile_size().to_f() / 2) + Scale(Vec2(3, 3)),
 					};
@@ -387,57 +389,31 @@ struct Level2: public GameScene {
 				bombs.clear();
 			}
 		}
-		
-		for (size_t i = 0; i < bombs.size(); i++) {
-			Bomb &bomb = bombs[i];
-			bool g = true;
-			
-			for (auto &wall : active_walls) {
-				if (wall->check_collision(&bomb)) {
-					bomb.reflect(*wall, 0.75);
-					g = false;
-				}
-			}
-			
-			if (bomb.check_collision(&player)) {
-				bomb.reflect(player, 0.75);
-			}
-			
-			for (size_t j = i + 1; j < bombs.size(); j++) {
-				if (bomb.check_collision(&bombs[j])) {
-					bomb.collide(bomb.mass, bombs[j], bombs[j].mass);
-				}
-			}
-			
-			if (g) bomb.velocity += gravity() * static_cast<float>(engine->frame());
-			else bomb.velocity *= static_cast<float>(std::pow(friction, engine->frame()));
-			
-			bomb.position += bomb.velocity * static_cast<float>(engine->frame());
-		}
 	}
 	
 	void render() {
 		GameScene::render();
 		
-		for (Bomb &bomb : bombs) draw(context->sheets.bomb.tile(0), bomb.position, Vec2i(16, 24));
+		for (auto &bomb : bombs) {
+			if (!bomb->is_colliding(large_camera)) continue;
+			
+			draw(context->sheets.bomb.tile(0), bomb->position, Vec2i(16, 24));
+		}
 		
-		effects.erase(
-			std::remove_if(effects.begin(), effects.end(), [&](auto& effect) {
-				auto d = effect.position.x - player.position.x;
-				auto p = d / noise_range;
-				
-				if (effect.channel.update()) effect.channel.pan(std::clamp(p, -1.f, 1.f));
-				
-				if (effect.animation.playing())
-					draw(effect.animation.get_texture_rect(), effect.transform + Translate(effect.position));
-				
-				effect.animation.update(engine->frame());
-				
-				// remove effect if animation and sound finished
-				return effect.animation.finished() && !effect.channel;
-			}),
-			effects.end()
-		);
+		std::erase_if(effects, [&](auto& effect) {
+			auto d = effect.position.x - camera.position.x;
+			auto p = d / noise_range;
+			
+			if (effect.channel.update()) effect.channel.pan(std::clamp(p, -1.f, 1.f));
+			
+			if (effect.animation.playing())
+				draw(effect.animation.get_texture_rect(), effect.transform + Translate(effect.position));
+			
+			effect.animation.update(engine->frame());
+			
+			// remove effect if animation and sound finished
+			return effect.animation.finished() && !effect.channel;
+		});
 	}
 };
 

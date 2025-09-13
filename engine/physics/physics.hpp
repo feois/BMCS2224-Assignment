@@ -3,39 +3,76 @@
 #define PHYSICS_HPP
 
 #include <engine/core/vec2.hpp>
+#include <engine/core/utils.hpp>
+#include "body.hpp"
+#include "mask.hpp"
+#include <algorithm>
+#include <functional>
 
-struct PhysicsObject {
-    Vec2f position;
-    Vec2f velocity;
-    
-    PhysicsObject(Vec2f pos, Vec2f velocity = Vec2()): position(pos), velocity(velocity) {}
-    
-    virtual bool check_collision(const PhysicsObject *obj) const = 0;
+template<MaskInt T = DefaultMaskInt>
+struct MaskBody: public virtual PhysicsBody {
+    Mask<T> layer;
+    Mask<T> mask;
 };
 
-struct Rect: public PhysicsObject {
-    Vec2f size;
+template<MaskInt T = DefaultMaskInt>
+struct PhysicsEngine {
+    std::vector<std::weak_ptr<MaskBody<T>>> bodies;
     
-    Rect(Vec2f pos, Vec2f size): PhysicsObject(pos), size(size) {}
+    Vec2f gravity_direction { 0, 1 };
+    float gravity_speed = 9.8f / 60;
     
-    bool check_collision(const PhysicsObject *obj) const override;
-    Direction push_out(Rect &obj) const;
+    constexpr Vec2f gravity() const { return gravity_direction * gravity_speed; }
     
-    float left() const { return position.x; }
-    float right() const { return position.x + size.x; }
-    float top() const { return position.y; }
-    float bottom() const { return position.y + size.y; }
-    Vec2f center() const { return position + size / 2; }
-};
-
-struct Circle: public PhysicsObject {
-    float radius;
+    void process_bodies(std::function<void (MaskBody<T>&, MaskBody<T>&)> f) {
+        for (size_t i = 0; i < bodies.size(); i++) {
+            auto a = bodies[i].lock();
+            
+            if (!a) continue;
+            
+            for (size_t j = i + 1; j < bodies.size(); j++) {
+                auto b = bodies[j].lock();
+                
+                if (!b) continue;
+                
+                f(*a, *b);
+            }
+        }
+    }
     
-    Circle(Vec2f center, float radius, Vec2f velocity = Vec2()): PhysicsObject(center, velocity), radius(radius) {}
-    
-    bool check_collision(const PhysicsObject *obj) const override;
-    void reflect(const Rect &rect, float elasticity = 1);
-    void collide(float mass, Circle &circle, float circle_mass, float elasticity = 1);
+    void process(int frame) {
+        float f = static_cast<float>(frame);
+        
+        // process bodies and remove invalid weak_ptr at the same time
+        std::erase_if(bodies, [&](auto& weak_pointer) {
+            auto shared = weak_pointer.lock();
+            
+            if (!shared) return true;
+            
+            auto& body = *shared;
+            
+            if (!body.is_static) {
+                if (!body.on_floor) body.velocity += gravity() * f;
+                body.position += body.velocity * f;
+                body.on_floor = false;
+            }
+            
+            return false;
+        });
+        
+        process_bodies([](auto &a, auto& b) {
+            if ((a.mask * b.layer) || (a.layer * b.mask)) {
+                a.collide(b);
+            }
+        });
+        
+        process_bodies([&](auto &a, auto& b) {
+            if ((a.mask * b.layer) || (a.layer * b.mask)) {
+                if (!a.on_floor) a.on_floor = a.is_colliding_floor(b, gravity_direction);
+                if (!b.on_floor) b.on_floor = b.is_colliding_floor(a, gravity_direction);
+            }
+        });
+    }
 };
 
 #endif
