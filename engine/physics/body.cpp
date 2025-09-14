@@ -2,6 +2,9 @@
 #include "body.hpp"
 #include <algorithm>
 
+#undef min
+#undef max
+
 using enum RectBody::Side;
 
 static Collision check_collision(const CircleBody &c1, const CircleBody &c2) {

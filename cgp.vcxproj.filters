@@ -15,151 +15,214 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="alignment.hpp">
+    <ClCompile Include="game\main.cpp">
       <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="angle.hpp">
+    </ClCompile>
+    <ClCompile Include="engine\audio\audio.cpp">
       <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="animation.hpp">
+    </ClCompile>
+    <ClCompile Include="engine\audio\channel.cpp">
       <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="audio.hpp">
+    </ClCompile>
+    <ClCompile Include="engine\audio\sound.cpp">
       <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="color.hpp">
+    </ClCompile>
+    <ClCompile Include="engine\core\sprite_sheet.cpp">
       <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="dependencies.hpp">
+    </ClCompile>
+    <ClCompile Include="engine\core\texture_rect.cpp">
       <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="device.hpp">
+    </ClCompile>
+    <ClCompile Include="engine\core\timer.cpp">
       <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="direction.hpp">
+    </ClCompile>
+    <ClCompile Include="engine\direct3d\device.cpp">
       <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="font.hpp">
+    </ClCompile>
+    <ClCompile Include="engine\direct3d\direct3d.cpp">
       <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="game.hpp">
+    </ClCompile>
+    <ClCompile Include="engine\direct3d\font.cpp">
       <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="input.hpp">
+    </ClCompile>
+    <ClCompile Include="engine\direct3d\sprite.cpp">
       <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="keyboard.hpp">
+    </ClCompile>
+    <ClCompile Include="engine\direct3d\texture.cpp">
       <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="line.hpp">
+    </ClCompile>
+    <ClCompile Include="engine\direct3d\texture_locker.cpp">
       <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="mouse.hpp">
+    </ClCompile>
+    <ClCompile Include="engine\direct3d\window.cpp">
       <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="physics.hpp">
+    </ClCompile>
+    <ClCompile Include="engine\direct3d\window_class.cpp">
       <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="result.hpp">
+    </ClCompile>
+    <ClCompile Include="engine\input\input.cpp">
       <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="sprite.hpp">
+    </ClCompile>
+    <ClCompile Include="engine\input\keyboard.cpp">
       <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="sprite_sheet.hpp">
+    </ClCompile>
+    <ClCompile Include="engine\input\mouse.cpp">
       <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="texture.hpp">
+    </ClCompile>
+    <ClCompile Include="engine\physics\body.cpp">
       <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="texture_locker.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="texture_rect.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="timer.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="transform.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ui.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="utils.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="vec2.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="window.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="window_class.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="audio.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="dependencies.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="device.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="font.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="input.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="keyboard.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="mouse.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="physics.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="result.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="sprite.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="sprite_sheet.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="texture.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="texture_locker.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="texture_rect.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="timer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="transform.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ui.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="window.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="window_class.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
+    <ClInclude Include="engine\audio\audio.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\audio\channel.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\audio\prelude.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\audio\sound.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\core\alignment.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\core\angle.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\core\animation.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\core\color.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\core\engine.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\core\result.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\core\scene.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\core\sprite_sheet.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\core\texture_rect.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\core\timer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\core\transform.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\core\utils.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\core\vec2.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\direct3d\device.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\direct3d\direct3d.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\direct3d\font.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\direct3d\line.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\direct3d\sprite.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\direct3d\texture.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\direct3d\texture_locker.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\direct3d\window.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\direct3d\window_class.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\input\input.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\input\keyboard.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\input\mouse.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\physics\body.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\physics\mask.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\physics\physics.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\physics\prelude.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\ui\align_container.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\ui\button.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\ui\composite_ui.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\ui\container.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\ui\hcontainer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\ui\label.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\ui\margin.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\ui\padding.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\ui\panel.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\ui\prelude.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\ui\stack_container.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\ui\text.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\ui\texture_ui.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\ui\ui.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\ui\vcontainer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\ui\wrapper.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\prelude.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

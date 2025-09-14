@@ -5,6 +5,9 @@
 #include "ui.hpp"
 #include <ranges>
 
+#undef min
+#undef max
+
 // stacks children on top of each other
 struct StackContainer: public UI {
     std::vector<Box<UI>> children;

@@ -4,6 +4,9 @@
 
 #include "container.hpp"
 
+#undef min
+#undef max
+
 // arranges children horizontally
 struct HContainer: public Container {
     using Container::Container;

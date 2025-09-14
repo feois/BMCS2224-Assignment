@@ -54,7 +54,7 @@ Vec2i Font::get_size(TStr str, Vec2i pos, TextConfig config) {
         if (config.size.y == 0) rect.bottom = 0;
         
         sprite->SetTransform(&t);
-        result = font->DrawText(&*sprite, str.data(), str.size(), &rect, config.flags() | DT_CALCRECT, config.color.d3d());
+        result = font->DrawText(&*sprite, str.data(), static_cast<INT>(str.size()), &rect, config.flags() | DT_CALCRECT, config.color.d3d());
         
         return Vec2i(rect.right - rect.left, rect.bottom - rect.top);
     }
@@ -70,7 +70,7 @@ Font& Font::write(TStr str, Vec2i pos, TextConfig config) {
     rect.bottom = (rect.top = pos.y) + size.y;
     
     sprite->SetTransform(&t);
-    result = font->DrawText(&*sprite, str.data(), str.size(), &rect, config.flags(), config.color.d3d());
+    result = font->DrawText(&*sprite, str.data(), static_cast<INT>(str.size()), &rect, config.flags(), config.color.d3d());
     
     return *this;
 }

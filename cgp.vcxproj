@@ -19,56 +19,77 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="alignment.hpp" />
-    <ClInclude Include="angle.hpp" />
-    <ClInclude Include="animation.hpp" />
-    <ClInclude Include="audio.hpp" />
-    <ClInclude Include="color.hpp" />
-    <ClInclude Include="dependencies.hpp" />
-    <ClInclude Include="device.hpp" />
-    <ClInclude Include="direction.hpp" />
-    <ClInclude Include="font.hpp" />
-    <ClInclude Include="game.hpp" />
-    <ClInclude Include="input.hpp" />
-    <ClInclude Include="keyboard.hpp" />
-    <ClInclude Include="line.hpp" />
-    <ClInclude Include="mouse.hpp" />
-    <ClInclude Include="physics.hpp" />
-    <ClInclude Include="result.hpp" />
-    <ClInclude Include="sprite.hpp" />
-    <ClInclude Include="sprite_sheet.hpp" />
-    <ClInclude Include="texture.hpp" />
-    <ClInclude Include="texture_locker.hpp" />
-    <ClInclude Include="texture_rect.hpp" />
-    <ClInclude Include="timer.hpp" />
-    <ClInclude Include="transform.hpp" />
-    <ClInclude Include="ui.hpp" />
-    <ClInclude Include="utils.hpp" />
-    <ClInclude Include="vec2.hpp" />
-    <ClInclude Include="window.hpp" />
-    <ClInclude Include="window_class.hpp" />
+    <ClCompile Include="engine\audio\audio.cpp" />
+    <ClCompile Include="engine\audio\channel.cpp" />
+    <ClCompile Include="engine\audio\sound.cpp" />
+    <ClCompile Include="engine\core\sprite_sheet.cpp" />
+    <ClCompile Include="engine\core\texture_rect.cpp" />
+    <ClCompile Include="engine\core\timer.cpp" />
+    <ClCompile Include="engine\direct3d\device.cpp" />
+    <ClCompile Include="engine\direct3d\direct3d.cpp" />
+    <ClCompile Include="engine\direct3d\font.cpp" />
+    <ClCompile Include="engine\direct3d\sprite.cpp" />
+    <ClCompile Include="engine\direct3d\texture.cpp" />
+    <ClCompile Include="engine\direct3d\texture_locker.cpp" />
+    <ClCompile Include="engine\direct3d\window.cpp" />
+    <ClCompile Include="engine\direct3d\window_class.cpp" />
+    <ClCompile Include="engine\input\input.cpp" />
+    <ClCompile Include="engine\input\keyboard.cpp" />
+    <ClCompile Include="engine\input\mouse.cpp" />
+    <ClCompile Include="engine\physics\body.cpp" />
+    <ClCompile Include="game\main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="audio.cpp" />
-    <ClCompile Include="dependencies.cpp" />
-    <ClCompile Include="device.cpp" />
-    <ClCompile Include="font.cpp" />
-    <ClCompile Include="input.cpp" />
-    <ClCompile Include="keyboard.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="mouse.cpp" />
-    <ClCompile Include="physics.cpp" />
-    <ClCompile Include="result.cpp" />
-    <ClCompile Include="sprite.cpp" />
-    <ClCompile Include="sprite_sheet.cpp" />
-    <ClCompile Include="texture.cpp" />
-    <ClCompile Include="texture_locker.cpp" />
-    <ClCompile Include="texture_rect.cpp" />
-    <ClCompile Include="timer.cpp" />
-    <ClCompile Include="transform.cpp" />
-    <ClCompile Include="ui.cpp" />
-    <ClCompile Include="window.cpp" />
-    <ClCompile Include="window_class.cpp" />
+    <ClInclude Include="engine\audio\audio.hpp" />
+    <ClInclude Include="engine\audio\channel.hpp" />
+    <ClInclude Include="engine\audio\prelude.hpp" />
+    <ClInclude Include="engine\audio\sound.hpp" />
+    <ClInclude Include="engine\core\alignment.hpp" />
+    <ClInclude Include="engine\core\angle.hpp" />
+    <ClInclude Include="engine\core\animation.hpp" />
+    <ClInclude Include="engine\core\color.hpp" />
+    <ClInclude Include="engine\core\engine.hpp" />
+    <ClInclude Include="engine\core\result.hpp" />
+    <ClInclude Include="engine\core\scene.hpp" />
+    <ClInclude Include="engine\core\sprite_sheet.hpp" />
+    <ClInclude Include="engine\core\texture_rect.hpp" />
+    <ClInclude Include="engine\core\timer.hpp" />
+    <ClInclude Include="engine\core\transform.hpp" />
+    <ClInclude Include="engine\core\utils.hpp" />
+    <ClInclude Include="engine\core\vec2.hpp" />
+    <ClInclude Include="engine\direct3d\device.hpp" />
+    <ClInclude Include="engine\direct3d\direct3d.hpp" />
+    <ClInclude Include="engine\direct3d\font.hpp" />
+    <ClInclude Include="engine\direct3d\line.hpp" />
+    <ClInclude Include="engine\direct3d\sprite.hpp" />
+    <ClInclude Include="engine\direct3d\texture.hpp" />
+    <ClInclude Include="engine\direct3d\texture_locker.hpp" />
+    <ClInclude Include="engine\direct3d\window.hpp" />
+    <ClInclude Include="engine\direct3d\window_class.hpp" />
+    <ClInclude Include="engine\input\input.hpp" />
+    <ClInclude Include="engine\input\keyboard.hpp" />
+    <ClInclude Include="engine\input\mouse.hpp" />
+    <ClInclude Include="engine\physics\body.hpp" />
+    <ClInclude Include="engine\physics\mask.hpp" />
+    <ClInclude Include="engine\physics\physics.hpp" />
+    <ClInclude Include="engine\physics\prelude.hpp" />
+    <ClInclude Include="engine\prelude.hpp" />
+    <ClInclude Include="engine\ui\align_container.hpp" />
+    <ClInclude Include="engine\ui\button.hpp" />
+    <ClInclude Include="engine\ui\composite_ui.hpp" />
+    <ClInclude Include="engine\ui\container.hpp" />
+    <ClInclude Include="engine\ui\hcontainer.hpp" />
+    <ClInclude Include="engine\ui\label.hpp" />
+    <ClInclude Include="engine\ui\margin.hpp" />
+    <ClInclude Include="engine\ui\padding.hpp" />
+    <ClInclude Include="engine\ui\panel.hpp" />
+    <ClInclude Include="engine\ui\prelude.hpp" />
+    <ClInclude Include="engine\ui\stack_container.hpp" />
+    <ClInclude Include="engine\ui\text.hpp" />
+    <ClInclude Include="engine\ui\texture_ui.hpp" />
+    <ClInclude Include="engine\ui\ui.hpp" />
+    <ClInclude Include="engine\ui\vcontainer.hpp" />
+    <ClInclude Include="engine\ui\wrapper.hpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
@@ -132,7 +153,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Program Files (x86)\FMOD SoundSystem\FMOD Studio API Windows\api\core\inc;C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files (x86)\FMOD SoundSystem\FMOD Studio API Windows\api\core\inc;C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalOptions>/Zc:preprocessor %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
@@ -169,8 +190,9 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Program Files (x86)\FMOD SoundSystem\FMOD Studio API Windows\api\core\inc;C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files (x86)\FMOD SoundSystem\FMOD Studio API Windows\api\core\inc;C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalOptions>/Zc:preprocessor %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

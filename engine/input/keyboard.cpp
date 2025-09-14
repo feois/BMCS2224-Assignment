@@ -2,7 +2,7 @@
 #include "keyboard.hpp"
 
 void Keyboard::_update() {
-    result = raw_device()->GetDeviceState(buffer.size(), buffer.data());
+    result = raw_device()->GetDeviceState(static_cast<DWORD>(buffer.size()), buffer.data());
     
     if (success()) {
         for (size_t i = 0; i < buffer.size(); i++) {

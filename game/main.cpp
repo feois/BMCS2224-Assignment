@@ -74,7 +74,7 @@ struct MyGame: public Engine<Context> {
 	}
 };
 
-enum PhysicsMask {
+enum PhysicsMask: unsigned char {
 	PLAYER,
 	WALL,
 	BOMB,
