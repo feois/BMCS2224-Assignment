@@ -12,6 +12,7 @@ struct Collision {
 };
 
 struct PhysicsBody {
+    bool is_active = true;
     bool is_static = false;
     bool on_floor = false;
     

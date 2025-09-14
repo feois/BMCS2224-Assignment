@@ -12,8 +12,6 @@
 struct StackContainer: public UI {
     std::vector<Box<UI>> children;
     
-    StackContainer(std::vector<Box<UI>> &&children): children(std::move(children)) {}
-    
     template<typename... Args>
     StackContainer(Args&&... args) {
         children.reserve(sizeof...(args));

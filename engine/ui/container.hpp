@@ -19,8 +19,6 @@ struct Container: public UI {
     float stretch_sum = 0;
     std::vector<Stretch> children {};
     
-    Container(std::vector<Stretch> &&children): children(std::move(children)) {}
-    
     template<typename... Args>
     Container(Args&&... args) {
         children.reserve(sizeof...(args));

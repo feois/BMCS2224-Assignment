@@ -22,18 +22,24 @@ struct PhysicsEngine {
     Vec2f gravity_direction { 0, 1 };
     float gravity_speed = 9.8f / 60;
     
+    template<typename... Args>
+    PhysicsEngine(Args&&... args) {
+        bodies.reserve(sizeof...(args));
+        (bodies.emplace_back(std::forward<Args>(args)), ...);
+    }
+    
     constexpr Vec2f gravity() const { return gravity_direction * gravity_speed; }
     
     void process_bodies(std::function<void (MaskBody<T>&, MaskBody<T>&)> f) {
         for (size_t i = 0; i < bodies.size(); i++) {
             auto a = bodies[i].lock();
             
-            if (!a) continue;
+            if (!(a && a->is_active)) continue;
             
             for (size_t j = i + 1; j < bodies.size(); j++) {
                 auto b = bodies[j].lock();
                 
-                if (!b) continue;
+                if (!(b && b->is_active)) continue;
                 
                 f(*a, *b);
             }
@@ -51,7 +57,7 @@ struct PhysicsEngine {
             
             auto& body = *shared;
             
-            if (!body.is_static) {
+            if (body.is_active && !body.is_static) {
                 if (!body.on_floor) body.velocity += gravity() * f;
                 body.position += body.velocity * f;
                 body.on_floor = false;
