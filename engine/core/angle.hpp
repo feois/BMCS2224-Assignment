@@ -4,6 +4,7 @@
 
 #include <engine/direct3d/direct3d.hpp>
 
+// represent an angle, create with Radian() or Degree()
 class Angle {
     float radian;
     

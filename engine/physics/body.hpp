@@ -4,6 +4,7 @@
 
 #include <engine/core/vec2.hpp>
 
+// collision detail
 struct Collision {
     Vec2f normal {};
     float overlap = 0;
@@ -11,6 +12,7 @@ struct Collision {
     constexpr operator bool() const { return overlap != 0; }
 };
 
+// an abstract class for bodies participating in physics
 struct PhysicsBody {
     bool is_active = true;
     bool is_static = false;
@@ -28,6 +30,7 @@ struct PhysicsBody {
     bool is_colliding_floor(const PhysicsBody &body, Vec2f gravity, float epsilon = 1.f);
 };
 
+// a rectangle body
 struct RectBody: public virtual PhysicsBody {
     Vec2f size {};
     
@@ -64,9 +67,10 @@ struct RectBody: public virtual PhysicsBody {
     
     Vec2f center() const { return position + size / 2; }
     
-    Side colliding_side(const PhysicsBody &body) const;
+    // Side colliding_side(const PhysicsBody &body) const;
 };
 
+// a circle body
 struct CircleBody: public virtual PhysicsBody {
     float radius = 0;
     

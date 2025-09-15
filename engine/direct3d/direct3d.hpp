@@ -9,8 +9,10 @@
 #include <engine/core/utils.hpp>
 #include <engine/core/result.hpp>
 
+// get the module handle
 HMODULE module_handle();
 
+// return a Rc to the d3d9 interface, release automatically if no more Rc exist
 Rc<IDirect3D9> Direct3D();
 
 class HResult: public Result {

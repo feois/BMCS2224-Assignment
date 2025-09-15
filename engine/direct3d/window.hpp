@@ -6,8 +6,6 @@
 #include "window_class.hpp"
 #include <engine/core/vec2.hpp>
 
-class Device;
-
 class Window: WindowCallback {
     HWND handle = nullptr;
     
@@ -24,8 +22,10 @@ public:
     HWND get_handle() const { return handle; }
     Vec2i get_size() const;
     
+    // convert screen coordinate to window coordinate
     Vec2i from_screen(Vec2i vec) const;
     
+    // manually destroy window
     void destroy();
     
     MOVE_ONLY(Window) {

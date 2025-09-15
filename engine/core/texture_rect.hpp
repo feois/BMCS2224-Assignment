@@ -4,6 +4,7 @@
 
 #include <engine/direct3d/texture.hpp>
 
+// represent a part of a texture
 struct TextureRect {
     const Texture *texture = nullptr;
     RECT rect {};

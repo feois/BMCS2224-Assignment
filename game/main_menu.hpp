@@ -5,6 +5,7 @@
 #include "levels.hpp"
 
 struct LevelSelect: public Scene<Context> {
+	// a level button
 	struct Level: public CompositeUI<Button> {
 		constexpr static auto SIZE = Vec2(150, 150);
 		constexpr static auto COLOR = Color(127, 191, 127);
@@ -25,7 +26,7 @@ struct LevelSelect: public Scene<Context> {
 				new VContainer {
 					Stretch(1, new AlignContainer {
 						{ Alignment::Center, Alignment::VCenter },
-						new Margin({}) // todo dummy
+						new TextureUI { root.context->sheets.shuriken.tile(0) },
 					}),
 					new AlignContainer {
 						Alignment::Center,
@@ -57,7 +58,7 @@ struct LevelSelect: public Scene<Context> {
 		bool on_click() override { return ui.on_click(); }
 	};
 	
-	LevelSelect() {
+	void init() override {
 		ui = new Padding {
 			{ 100, 100 },
 			new AlignContainer {

@@ -11,6 +11,7 @@
 #include "scene.hpp"
 #include <algorithm>
 
+// the main engine framework, template parameter $C is the context type
 template<typename C>
 class Engine {
 protected:
@@ -59,6 +60,9 @@ public:
     Rc<Scene<C>> current_scene = nullptr;
     Rc<Texture> pointer_texture;
     
+    bool click_consumed = false;
+    
+    // create a window with title $name at $pos position with a resolution of $size
     Engine(LPCTSTR name, Vec2i pos, Vec2i size, int fps, int show):
         resolution(size),
         window_class(WindowClass(name)),
@@ -68,16 +72,23 @@ public:
         window.engine = this;
     }
     
+    // called when window received a key press
+    // return true if the key is accepted
     virtual bool on_keydown(WPARAM, LPARAM) { return false; }
+    // called when window is destroyed
     virtual void on_destroy() {}
     
+    // prepare to destroy the engine after this frame completes
     void quit() { quit_flag = true; }
     
     void toggle_fullscreen() { reset = true; }
     
+    // return how much time has passed since last main loop in seconds
     double delta() const { return timer.delta(); }
+    // return how many frames have passed since last main loop
     int frame() const { return timer.frame(); }
     
+    // physics preparation
     virtual void pre_physics() {
         if (!keyboard) keyboard.retry();
         if (!mouse) mouse.retry();
@@ -96,13 +107,15 @@ public:
             ui.calc_min_size(ui_drawer);
             ui.update({}, resolution);
             ui.hover(mouse_pos);
-            if (mouse && mouse.left_click() && ui.click(mouse_pos))
-                ; // todo consume click
+            
+            click_consumed = mouse && mouse.left_click() && ui.click(mouse_pos);
         }
     }
     
+    // physics code
     virtual void physics() { if (current_scene) current_scene->physics(); }
     
+    // rendering preparation
     virtual void pre_render() {
         fmod.update();
         device.clear(background);
@@ -111,8 +124,10 @@ public:
         ui_drawer.begin();
     }
     
+    // scene rendering
     virtual void render() { if (current_scene) current_scene->render(); }
     
+    // scene UI rendering
     virtual void render_ui() {
         if (current_scene && current_scene->ui) {
             UI& ui = *current_scene->ui;
@@ -124,9 +139,12 @@ public:
         if (pointer_texture) sprite.draw(*pointer_texture, mouse_pos);
     }
     
+    // rendering clean up
     virtual void post_render() {
-        ui_drawer.end();
+        sprite.flush();
+        render_ui();
         sprite.end();
+        ui_drawer.end();
         device.end();
         
         if (reset) {
@@ -141,6 +159,7 @@ public:
         device.present();
     }
     
+    // runs the main loop with the context
     virtual void run(C& context) {
         MSG msg;
         ZeroMemory(&msg, sizeof(msg));
@@ -182,7 +201,6 @@ public:
             
             pre_render(); QUIT
             render(); QUIT
-            render_ui(); QUIT
             post_render(); QUIT
             
             #undef QUIT

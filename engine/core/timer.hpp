@@ -28,10 +28,10 @@ public:
     
     int get_fps() const { return fps; }
     
-    void update();
+    void update(); // update delta() and frame()
     
-    double delta() const { return time_delta; }
-    int frame() const { return frame_delta; }
+    double delta() const { return time_delta; } // get how much time has passed since last update()
+    int frame() const { return frame_delta; } // get how many frames have passed since last update()
 };
 
 #endif

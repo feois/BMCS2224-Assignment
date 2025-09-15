@@ -5,6 +5,7 @@
 #include "device.hpp"
 #include <span>
 
+// line drawing renderer
 class Line: public HResult, public Renderer {
     Box<ID3DXLine, RELEASE(ID3DXLine)> line;
     
@@ -19,25 +20,26 @@ public:
     
 	void begin() override { result = line->Begin(); }
 	void end() override { result = line->End(); }
+	void lost() override { result = line->OnLostDevice(); }
+	void reset() override { result = line->OnResetDevice(); }
 	
+	// draw lines connecting the points with the color
 	Line& draw(std::span<Point> points, Color color = Colors::BLACK) {
 		result = line->Draw(points.data(), points.size(), color.d3d());
 		
 		return *this;
 	}
 	
+	// draw a rectangle using lines
 	Line& draw_rect(Vec2f pos, Vec2f size, Color color = Colors::BLACK) {
 		std::array<Point, 5> points { pos, pos + Vec2f(size.x, 0), pos + size, pos + Vec2f(0, size.y), pos };
 		return draw(points, color);
 	}
 	
+	// draw the rectangle using lines with offset
 	Line& draw_rect_offset(Vec2f pos, Vec2f size, Color color = Colors::BLACK) {
 		return draw_rect(pos - Vec2(2, 2), size + Vec2(3, 3), color);
 	}
-	
-	
-	void lost() override { result = line->OnLostDevice(); }
-	void reset() override { result = line->OnResetDevice(); }
 	
 	WRAP(ID3DXLine, line.get());
 };

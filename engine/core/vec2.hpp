@@ -111,6 +111,7 @@ struct Vec2i {
 
 constexpr Vec2i Vec2f::to_i() const { return { static_cast<int>(x), static_cast<int>(y) }; }
 
+// calculate both integer and float so that frequent conversion is not needed
 struct Vec2 {
     Vec2i iv;
     Vec2f fv;

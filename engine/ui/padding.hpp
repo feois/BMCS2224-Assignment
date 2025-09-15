@@ -7,7 +7,8 @@
 // surrounds child with empty space
 struct Padding: public Wrapper {
     Vec2i padding;
-    
+        
+    Padding(int padding, Box<UI> &&child): Padding({ padding, padding }, std::move(child)) {}
     Padding(Vec2i padding, Box<UI> &&child): Wrapper(std::move(child)), padding(padding) {}
     
     void calc_min_size(Drawer &drawer) override {

@@ -18,14 +18,16 @@ class Device: public HResult {
 public:
 	Device(const Window &window, Vec2i size);
 	
+	// clear buffer and set background color
 	void clear(Color color = Color()) const;
 	
+	// start rendering
 	Device& begin() { result = device->BeginScene(); return *this; }
+	// stop rendering
 	Device& end() { result = device->EndScene(); return *this; }
 	
+	// present rendered scene
 	void present() const;
-	
-	Vec2f scale(Vec2f) const;
 	
 	bool is_fullscreen() const { return !param.Windowed; }
 	
@@ -34,12 +36,14 @@ public:
 	WRAP(IDirect3DDevice9, device.get());
 };
 
+// a rendering resource
 struct Renderer {
-	virtual void begin() = 0;
-	virtual void end() = 0;
-	virtual void lost() = 0;
-	virtual void reset() = 0;
+	virtual void begin() = 0; // start rendering
+	virtual void end() = 0; // stop rendering
+	virtual void lost() = 0; // prepare for device reset
+	virtual void reset() = 0; // recover from device reset
 	
+	// flush the batched rendering
 	void flush() {
 		end();
 		begin();

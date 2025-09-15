@@ -23,12 +23,6 @@ Fmod::Fmod(int max_channels, FMOD_INITFLAGS flags, void *extra_driver_data, floa
     if (failed()) system = {};
 }
 
-Fmod& Fmod::close() {
-    if (system) result = FMOD_System_Close(&*system);
-    
-    return *this;
-}
-
 Fmod& Fmod::update() {
     if (system) result = FMOD_System_Update(&*system);
     

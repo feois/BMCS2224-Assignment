@@ -19,7 +19,9 @@ class Keyboard: public InputDevice<Keyboard_init> {
 public:
     using InputDevice<Keyboard_init>::InputDevice;
     
+    // if key is pressed
     bool key_pressed(BYTE key) const;
+    // if key is pressed only after being unpressed
     bool key_just_pressed(BYTE key) const;
 };
 

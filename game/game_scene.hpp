@@ -4,6 +4,7 @@
 
 #include "context.hpp"
 
+// a visual effect (vfx)
 struct Effect {
 	Animation animation;
 	Vec2f position;
@@ -11,6 +12,7 @@ struct Effect {
 	Transform transform {};
 };
 
+// a static wall
 struct Wall: public virtual RectBody, public virtual MaskBody<> {
 	Color color = Color(63, 63, 191);
 	
@@ -23,6 +25,7 @@ struct Wall: public virtual RectBody, public virtual MaskBody<> {
 	}
 };
 
+// a trap that damages player
 struct Grinder: public virtual CircleBody, public virtual MaskBody<> {
 	Animation animation;
 	float scale;
@@ -45,12 +48,13 @@ struct Grinder: public virtual CircleBody, public virtual MaskBody<> {
 	}
 };
 
+// a bomb that player throws
 struct Bomb: public virtual CircleBody, virtual MaskBody<> {
     static Animation explosion_animation(Context &context) {
         static Box<Animation> anim;
         if (!anim) anim = new Animation {
             FPS / 15,
-            6,
+            context.sheets.explosion.get_tile_count(),
             [&context](int frame) { return context.sheets.explosion.tile(frame); },
             false,
         };
@@ -67,6 +71,7 @@ struct Bomb: public virtual CircleBody, virtual MaskBody<> {
 	}
 };
 
+// an entity that has hp
 struct Entity: public virtual RectBody, public virtual MaskBody<> {
 	Box<Animation> animation;
 	int direction = 0;
@@ -108,8 +113,9 @@ struct Entity: public virtual RectBody, public virtual MaskBody<> {
     }
 };
 
+// the player
 struct Player: public Entity {
-    bool facing_right = true;
+    bool facing_right = true; // used in animation
 	float jump_power = 7.5;
 	bool double_jump = false;
     
@@ -138,6 +144,7 @@ struct Player: public Entity {
 
 struct GameScene: public Scene<Context> {
 	Label* hp_label = nullptr;
+	StackContainer *stack = nullptr;
 	
 	RectBody camera {};
 	RectBody large_camera {}; // used to deactivate bodies if they are far away from camera
@@ -157,6 +164,8 @@ struct GameScene: public Scene<Context> {
 	
 	bool paused = false;
 	
+	Channel music;
+	
 	void update_hp() {
 		hp_string = format("HP Left: %d", player->hp);
 		hp_label->set_text(hp_string);
@@ -164,32 +173,96 @@ struct GameScene: public Scene<Context> {
 		if (player->is_dead()) engine->scenes.pop_back();
 	}
 	
+	Box<UI> pause_panel() {
+		return new AlignContainer {
+			{ Alignment::Center, Alignment::VCenter },
+			new Panel {
+				Color(127, 127, 255),
+				0,
+				Colors::ZERO,
+				new Padding {
+					10,
+					new VContainer {
+						new AlignContainer {
+							Alignment::Center,
+							new Text(TEXT("Paused"), {})
+						},
+						new HContainer {
+							new Text(TEXT("Music"), {}),
+							new Margin({ 100, 0 }),
+							new Button {
+								BUTTON_COLOR,
+								BUTTON_BORDER_WIDTH,
+								BUTTON_BORDER,
+								{ 10, 10 },
+								new Text(TEXT("-"), {}),
+								[&]() {
+									if (music) {
+										auto volume = music.volume() - 0.1f;
+										if (volume < 0) volume = 0;
+										music.set_volume(volume);
+									}
+								}
+							},
+							new Margin({ 10, 0 }),
+							new Button {
+								BUTTON_COLOR,
+								BUTTON_BORDER_WIDTH,
+								BUTTON_BORDER,
+								{ 10, 10 },
+								new Text(TEXT("+"), {}),
+								[&]() {
+									if (music) {
+										auto volume = music.volume() + 0.1f;
+										if (volume > 1) volume = 1;
+										music.set_volume(volume);
+									}
+								}
+							},
+						}
+					}
+				}
+			}
+		};
+	}
+	
 	void init() override {
-		ui = new Padding {
-			{ 20, 20 },
-			new StackContainer {
-				new AlignContainer {
-					{ Alignment::Top, Alignment::Right },
-					hp_label = new Label {
-						TEXT(""),
-						Colors::ZERO,
-						0,
-						Colors::ZERO,
-						{},
-						{}
-					}
-				},
-				new AlignContainer {
-					{ Alignment::Top, Alignment::Left },
-					new Button {
-						BUTTON_COLOR,
-						BUTTON_BORDER_WIDTH,
-						BUTTON_BORDER,
-						{},
-						new TextureUI { context->assets.pause },
-						[&]() { paused = !paused; },
-					}
-				},
+		ui = stack = new StackContainer {
+			new Padding {
+				20,
+				new StackContainer {
+					new AlignContainer {
+						{ Alignment::Top, Alignment::Right },
+						hp_label = new Label {
+							TEXT(""),
+							Colors::ZERO,
+							0,
+							Colors::ZERO,
+							{},
+							{}
+						}
+					},
+					new AlignContainer {
+						{ Alignment::Top, Alignment::Left },
+						new Button {
+							BUTTON_COLOR,
+							BUTTON_BORDER_WIDTH,
+							BUTTON_BORDER,
+							{},
+							new TextureUI { context->assets.pause },
+							[&]() {
+								paused = !paused;
+								
+								if (paused) {
+									stack->children.push_back(pause_panel());
+								}
+								else {
+									stack->children.pop_back();
+								}
+							},
+						}
+					},
+				}
 			}
 		};
         
@@ -218,12 +291,32 @@ struct GameScene: public Scene<Context> {
 		if (paused) return;
 		
 		if (engine->mouse) {
-			if (engine->mouse.right_click()) {
+			if (engine->mouse.left_click() && !engine->click_consumed) { // throw bomb
 				auto n = (engine->mouse_pos.to_f() - (player->position - camera.position)).normalize();
 				auto bomb = std::make_shared<Bomb>(player->position, n * 10);
 				
 				bombs.push_back(bomb);
 				physics_engine.bodies.push_back(bomb);
+			}
+            
+			if (engine->mouse.right_click()) { // detonate bomb
+				for (auto &bomb : bombs) {
+					const auto &sounds = context->assets.explosion;
+					const auto &sound = sounds[rand() % sounds.size()];
+					
+					Effect effect {
+						Bomb::explosion_animation(*context),
+						bomb->position,
+						engine->fmod.channel(sound),
+						Transform(context->sheets.explosion.get_tile_size().to_f() / 2) + Scale(Vec2(3, 3)),
+					};
+					
+					effect.channel.play();
+					
+					effects.push_back(std::move(effect));
+				}
+				
+				bombs.clear();
 			}
 		}
 		
@@ -245,32 +338,14 @@ struct GameScene: public Scene<Context> {
 					jump();
 				}
 			}
-            
-			if (engine->keyboard.key_just_pressed(DIK_SPACE)) {
-				for (auto &bomb : bombs) {
-					const auto &sounds = context->assets.explosion;
-					const auto &sound = sounds[rand() % sounds.size()];
-					
-					Effect effect {
-						Bomb::explosion_animation(*context),
-						bomb->position,
-						engine->fmod.channel(sound),
-						Transform(context->sheets.explosion.get_tile_size().to_f() / 2) + Scale(Vec2(3, 3)),
-					};
-					
-					effect.channel.play();
-					
-					effects.push_back(std::move(effect));
-				}
-				
-				bombs.clear();
-			}
 		}
 		
         player->update(engine->frame());
         
 		physics_engine.process(engine->frame());
         
+		// deactivate bodies that are too far away from camera
+		
         for (auto &wall : walls) {
             wall->is_active = wall->is_colliding(large_camera);
         }
@@ -285,10 +360,12 @@ struct GameScene: public Scene<Context> {
 		}
 	}
 	
+	// adjust drawing by camera position
 	Sprite& draw(const TextureRect &texture, Vec2f pos = Vec2(), Vec2i center = Vec2(), Color modulate = Colors::WHITE) {
 		return engine->sprite.draw(texture, (pos - camera.position).to_i(), center, modulate);
 	}
 	
+	// adjust drawing by camera position
 	Sprite& draw(const TextureRect &texture, const Transform &transform, Color modulate = Colors::WHITE) {
 		return engine->sprite.draw(texture, transform + Translate(-camera.position), modulate);
 	}
@@ -334,6 +411,17 @@ struct GameScene: public Scene<Context> {
 			// remove effect if animation and sound finished
 			return effect.animation.finished() && !effect.channel;
 		});
+		
+		music.update();
+		
+		if (!music) {
+			music = engine->fmod.channel(context->assets.music);
+			music.play();
+		}
+	}
+	
+	~GameScene() {
+		if (music) music.stop();
 	}
 };
 

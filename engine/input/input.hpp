@@ -6,9 +6,9 @@
 #include <engine/core/utils.hpp>
 #include <engine/direct3d/window.hpp>
 
-Vec2i get_mouse_pos();
+Vec2i get_mouse_pos(); // get mouse position (screen coordinate), convert with Window::from_screen
 
-Rc<IDirectInput8> DirectInput();
+Rc<IDirectInput8> DirectInput(); // returns a Rc to direct input interface, release if no Rc exist
 
 enum class ActiveState {
     Inactive,
@@ -81,16 +81,20 @@ protected:
     virtual void _update() = 0;
 
 public:
+    // attempt to acquire input device, may fail
+    // use retry() if failure
     InputDevice(const Window &window, bool background, bool exclusive)
     : device(device_rc()), window(&window), background(background), exclusive(exclusive), acquired(false)
     { retry(); }
 
+    // reacquire device
     InputDevice& retry() {
         if (device && !acquired) acquired = device->acquire(*window, background, exclusive);
         
         return *this;
     }
     
+    // update state, may fail and unacquire device
     InputDevice& update() {
         if (acquired) {
             _update();
@@ -104,6 +108,7 @@ public:
         return *this;
     }
     
+    // convert InputDevice to true if it's acquired and valid
     operator bool() const { return acquired; }
     ~InputDevice() { if (acquired) device->unacquire(); acquired = false; }
 };

@@ -14,11 +14,12 @@
 #include <strsafe.h>
 
 template<typename T>
-using Rc = std::shared_ptr<T>;
+using Rc = std::shared_ptr<T>; // alias for reference-counted pointer
 
-using TString = std::basic_string<TCHAR>;
-using TStr = std::basic_string_view<TCHAR>;
+using TString = std::basic_string<TCHAR>; // alias
+using TStr = std::basic_string_view<TCHAR>; // alias
 
+// specify that a class cannot be copied
 #define MOVE_ONLY(class) \
     class(const class &) = delete; \
     class& operator =(const class &) = delete; \
@@ -32,14 +33,19 @@ using TStr = std::basic_string_view<TCHAR>;
     } \
     class(class &&other) noexcept 
 
+// a lambda that release a d3d9 resource
 #define RELEASE(t) [](t* pointer) { pointer->Release(); }
 
-#define MOVE(member) member = other.member;
+// move a class member, use in MOVE_ONLY
+#define MOVE(member) member = std::move(other.member);
 
+// define a way to get the underlying type of a wrapper
 #define WRAP(t, n) \
     t& operator *() const { return *operator->(); } \
     t* operator ->() const { return n; } \
 
+// define a function that return a Rc that automatically destroys itself if there's no more Rc
+// if no Rc exist, it creates the Rc first
 #define SINGLETON(t, f, d) \
     static std::weak_ptr<t> w; \
     if (auto s = w.lock()) return s; \
@@ -47,7 +53,8 @@ using TStr = std::basic_string_view<TCHAR>;
     w = s; \
     return s; \
 
-// format returns a temporary string, therefore it will be destroyed by the end of statement
+// format a string like sprintf
+// returns a temporary string, therefore it will be destroyed by the end of statement
 template<size_t FORMAT_LENGTH, typename... T>
 TString format(LPCTSTR f, T&&... t) {
     size_t extra = 32;
@@ -76,17 +83,20 @@ TString format(LPCTSTR f, T&&... t) {
     }
 }
 
+// create an error window
 template<size_t FORMAT_LENGTH, typename... T>
 void error(LPCTSTR f, T&&... t) {
 	MessageBox(nullptr, format<FORMAT_LENGTH>(f, std::forward<T>(t)...).data(), TEXT("Error"), MB_OK | MB_ICONERROR);
 }
 
+// create an error window and forcefully exit with the code
 template<size_t FORMAT_LENGTH, typename... T>
 void panic(int code, LPCTSTR f, T&&... t) {
     error<FORMAT_LENGTH>(f, std::forward<T>(t)...);
     exit(code);
 }
 
+// return the value if Result::success() returns true, otherwise panic
 template<size_t FORMAT_LENGTH, typename T, typename... U>
 static T panic_if_failed(T t, int code, LPCTSTR s, U&&... u) {
     if (t.failed()) panic<FORMAT_LENGTH>(code, s, std::forward<U>(u)...);
@@ -98,9 +108,11 @@ static T panic_if_failed(T t, int code, LPCTSTR s, U&&... u) {
 #define panic(c, f, ...) panic<std::char_traits<TCHAR>::length(TEXT(f))>(c, TEXT(f) __VA_OPT__(,) __VA_ARGS__)
 #define panic_if_failed(t, c, f, ...) panic_if_failed<sizeof(TEXT(f))>(t, c, TEXT(f) __VA_OPT__(,) __VA_ARGS__)
 
+// early release an object
 template<typename T>
 void drop(T& t) { T temp(std::move(t)); }
 
+// wraps a unique_ptr
 template<typename T, void (*F)(T*) = nullptr>
 class Box {
     std::unique_ptr<T, decltype(F)> object;

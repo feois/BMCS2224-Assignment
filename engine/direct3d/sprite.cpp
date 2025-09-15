@@ -27,5 +27,7 @@ Sprite &Sprite::draw(const TextureRect &texture, const Transform &transform, Col
     return *this;
 }
 
+void Sprite::begin() { result = sprite->Begin(flag); }
+void Sprite::end() { result = sprite->End(); }
 void Sprite::lost() { result = sprite->OnLostDevice(); }
 void Sprite::reset() { result = sprite->OnResetDevice(); }

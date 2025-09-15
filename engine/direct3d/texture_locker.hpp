@@ -6,6 +6,7 @@
 #include "texture.hpp"
 #include <engine/core/color.hpp>
 
+// read pixels from a texture
 class TextureReader: public HResult {
 protected:
     Box<const Texture, [](const Texture *p) { (*p)->UnlockRect(0); }> texture;
@@ -19,6 +20,7 @@ public:
     Color get_pixel(Vec2i pos) const;
 };
 
+// modify pixels of a texture
 class TextureWriter: public TextureReader {
 public:
     TextureWriter(const Texture &texture, const RECT *rect = nullptr): TextureReader(texture, rect, false) {}

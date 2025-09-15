@@ -11,10 +11,11 @@
 
 template<MaskInt T = DefaultMaskInt>
 struct MaskBody: public virtual PhysicsBody {
-    Mask<T> layer;
-    Mask<T> mask;
+    Mask<T> layer; // which flags this body has
+    Mask<T> mask; // which flags this body targets
 };
 
+// automatically resolve collisions
 template<MaskInt T = DefaultMaskInt>
 struct PhysicsEngine {
     std::vector<std::weak_ptr<MaskBody<T>>> bodies;
@@ -30,22 +31,7 @@ struct PhysicsEngine {
     
     constexpr Vec2f gravity() const { return gravity_direction * gravity_speed; }
     
-    void process_bodies(std::function<void (MaskBody<T>&, MaskBody<T>&)> f) {
-        for (size_t i = 0; i < bodies.size(); i++) {
-            auto a = bodies[i].lock();
-            
-            if (!(a && a->is_active)) continue;
-            
-            for (size_t j = i + 1; j < bodies.size(); j++) {
-                auto b = bodies[j].lock();
-                
-                if (!(b && b->is_active)) continue;
-                
-                f(*a, *b);
-            }
-        }
-    }
-    
+    // resolve collisions
     void process(int frame) {
         float f = static_cast<float>(frame);
         
@@ -78,6 +64,23 @@ struct PhysicsEngine {
                 if (!b.on_floor) b.on_floor = b.is_colliding_floor(a, gravity_direction);
             }
         });
+    }
+    
+private:
+    void process_bodies(std::function<void (MaskBody<T>&, MaskBody<T>&)> f) {
+        for (size_t i = 0; i < bodies.size(); i++) {
+            auto a = bodies[i].lock();
+            
+            if (!(a && a->is_active)) continue;
+            
+            for (size_t j = i + 1; j < bodies.size(); j++) {
+                auto b = bodies[j].lock();
+                
+                if (!(b && b->is_active)) continue;
+                
+                f(*a, *b);
+            }
+        }
     }
 };
 

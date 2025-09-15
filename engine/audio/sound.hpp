@@ -4,6 +4,7 @@
 
 #include "audio.hpp"
 
+// a loaded audio resource
 class Sound: public FmodResult {
     Box<FMOD_SOUND, [](FMOD_SOUND* p) { FMOD_Sound_Release(p); }> sound;
     
@@ -18,6 +19,7 @@ public:
     Sound(Fmod &fmod, const char *name_or_data, FMOD_MODE open_mode, FMOD_CREATESOUNDEXINFO info, FMOD_MODE sound_mode = FMOD_DEFAULT)
     : Sound(fmod, name_or_data, sound_mode, open_mode, &info) {}
     
+    // set how the audio loops
     template<FMOD_TIMEUNIT S, FMOD_TIMEUNIT E = S>
     Sound& loop(unsigned int start, unsigned int end, int count = -1) {
         if (sound) result = FMOD_Sound_SetLoopPoints(&*sound, start, S, end, E);

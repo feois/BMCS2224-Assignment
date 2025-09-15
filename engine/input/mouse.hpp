@@ -25,13 +25,14 @@ public:
         Right,
     };
     
+    // return the mouse movement
     Vec2i delta() const;
     int delta_x() const;
     int delta_y() const;
-    int wheel() const;
-    bool left_click(bool once = true) const;
-    bool right_click(bool once = true) const;
-    bool middle_click(bool once = true) const;
+    int wheel() const; // return the mouse wheel movement
+    bool left_click(bool once = true) const; // if left clicked, $once will only return true if just clicked
+    bool right_click(bool once = true) const; // if right clicked, $once will only return true if just clicked
+    bool middle_click(bool once = true) const; // if middle clicked, $once will only return true if just clicked
 };
 
 #endif

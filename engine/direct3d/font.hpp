@@ -6,6 +6,7 @@
 #include "sprite.hpp"
 #include <engine/core/alignment.hpp>
 
+// define how a text should be drawn
 struct TextConfig: public HResult {
 	#define tc_member(t, n, v) t n = v; \
 		TextConfig set_##n(t n) const { auto tc = *this; tc.n = n; return tc; }
@@ -31,6 +32,7 @@ struct TextConfig: public HResult {
     DWORD flags() const;
 };
 
+// text drawing renderer
 class Font: public HResult, public Renderer {
     Box<ID3DXFont, RELEASE(ID3DXFont)> font;
     Sprite sprite;
@@ -40,14 +42,15 @@ public:
 	
     void begin() override;
 	void end() override;
-	
-    Vec2i get_size(TStr str, Vec2i pos, TextConfig config = {});
-    
-	Font& write(TStr str, Vec2i pos, TextConfig config = {});
-	
     void lost() override;
     void reset() override;
     
+	// calculate how large a text will be
+    Vec2i get_size(TStr str, Vec2i pos, TextConfig config = {});
+    
+	// draw a text
+	Font& write(TStr str, Vec2i pos, TextConfig config = {});
+	
     WRAP(ID3DXFont, font.get());
 };
 
